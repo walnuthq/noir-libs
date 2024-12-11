@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use noir_libs::{filesystem::{extract_package, prepare_cache_dir}, network::download_remote};
+use noir_libs::{filesystem::{extract_package, prepare_cache_dir}, manifest::{try_find_manifest, write_package}, network::download_remote};
 
 /// A CLI package manager for Noir
 #[derive(Parser)]
@@ -39,12 +39,18 @@ fn main() {
 }
 
 fn add_package(package_name: &str, version: &str) {
-    println!("Adding package: {}", package_name);
+     println!("Adding package: {}", package_name);
     let dir = prepare_cache_dir();
     let path_with_version = dir.join(format!("{}-{}", package_name, version));
     let path_without_version = dir.join( package_name);
     download_remote(&path_with_version, package_name, version);
-    extract_package(&path_with_version, &path_without_version, version).expect("Problem extracting package");
+    extract_package(&path_with_version, &path_without_version, version).expect("Problem extracting package"); 
+    let manifest_path = try_find_manifest().unwrap();
+
+    // TEMP HACK
+    let package_path = format!("../../../.cache/noir-libs/{}/{}", package_name, version);
+
+    write_package(manifest_path, package_name, &package_path);
 }
 
 fn remove_package(package_name: &str) {
