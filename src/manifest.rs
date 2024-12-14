@@ -1,6 +1,6 @@
 use std::{env, path::PathBuf};
 
-use toml_edit::{value, DocumentMut};
+use toml_edit::DocumentMut;
 
 use crate::MANIFEST_FILE_NAME;
 
@@ -17,6 +17,26 @@ pub fn write_package(manifest : PathBuf, package_name: &str, path : &str) {
 
     std::fs::write(manifest, doc.to_string()).expect("Cannot write file");
 }
+
+pub fn remove_package(manifest: PathBuf, package_name: &str) {
+    println!("Removing package {}", package_name);
+
+    // Read the file content
+    let content = std::fs::read_to_string(&manifest).expect("Cannot read file");
+
+    // Parse the content as TOML
+    let mut doc = content.parse::<DocumentMut>().expect("Invalid TOML");
+    
+    // Ensure that the "dependencies" table exists and is mutable
+    if let Some(dependencies) = doc["dependencies"].as_table_mut() {
+        // Remove the specified package from the dependencies
+        dependencies.remove(package_name);
+    }
+
+    // Write the modified content back to the file
+    std::fs::write(manifest, doc.to_string()).expect("Cannot write file");
+}
+
 
 pub fn try_find_manifest() -> Option<PathBuf> {
     let pwd = env::current_dir().expect("Unable to find current folder");

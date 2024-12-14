@@ -33,12 +33,6 @@ pub fn prepare_cache_dir() -> PathBuf {
 }
 
 pub fn extract_package(path_with_version: &PathBuf, path_without_version : &PathBuf, version: &str) -> io::Result<()> {
-    // Ensure the package path is a directory
-    //ensure_dir(&package_path)?;
-
-    // Create the extract directory by appending the version to the package path
-    //let mut extract_dir = package_path.clone();
-    //extract_dir.push(version);
     println!("WITH {:?} WITHOUT {:?} VER {:?}", path_with_version, path_without_version, version);
 
     let extract_dir = path_without_version.join(version);
