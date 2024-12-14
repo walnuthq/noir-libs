@@ -11,7 +11,7 @@ pub fn add(package_name: &str, version: &str) {
     extract_package(&path_with_version, &path_without_version, version).expect("Problem extracting package"); 
 
     let manifest_path = try_find_manifest().unwrap();
-    let target_dir = dir.join("protocol_types").join(version);
+    let target_dir = dir.join(package_name).join(version);
     // Get the directory containing the manifest
     let project_dir = manifest_path.parent().expect("Failed to get project directory");
 
