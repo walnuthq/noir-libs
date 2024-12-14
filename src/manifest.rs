@@ -20,7 +20,7 @@ pub fn write_package(manifest : PathBuf, package_name: &str, path : &str) {
 
 pub fn try_find_manifest() -> Option<PathBuf> {
     let pwd = env::current_dir().expect("Unable to find current folder");
-    println!("DIR {:?}", pwd);
+    //println!("DIR {:?}", pwd);
     let mut root = Some(pwd.as_path());
     while let Some(path) = root {
         let manifest = path.join(MANIFEST_FILE_NAME);

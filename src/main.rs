@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use noir_libs::{filesystem::{extract_package, prepare_cache_dir}, manifest::{try_find_manifest, write_package}, network::download_remote};
+use pathdiff::diff_paths;
 
 /// A CLI package manager for Noir
 #[derive(Parser)]
@@ -45,12 +46,21 @@ fn add_package(package_name: &str, version: &str) {
     let path_without_version = dir.join( package_name);
     download_remote(&path_with_version, package_name, version);
     extract_package(&path_with_version, &path_without_version, version).expect("Problem extracting package"); 
+
+
+
     let manifest_path = try_find_manifest().unwrap();
+    let target_dir = dir.join("protocol_types").join(version);
+    // Get the directory containing the manifest
+    let project_dir = manifest_path.parent().expect("Failed to get project directory");
 
-    // TEMP HACK
-    let package_path = format!("../../../.cache/noir-libs/{}/{}", package_name, version);
+    // Compute the relative path to `target_dir` from the project directory
+    let relative_path = diff_paths(&target_dir, project_dir)
+        .expect("Failed to compute relative path")
+        .to_string_lossy()
+        .into_owned();
 
-    write_package(manifest_path, package_name, &package_path);
+    write_package(manifest_path, package_name, &relative_path);
 }
 
 fn remove_package(package_name: &str) {
