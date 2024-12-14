@@ -13,8 +13,8 @@ struct Cli {
 enum Commands {
     /// Adds a package to the project
     Add {  
-        /// Package in the format package@version
-        package: String,
+        /// Packages in the format package@version
+        packages: Vec<String>,
     },
     /// Removes a package from the project
     Remove {
@@ -27,12 +27,14 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Add { package } => {
-            let parts: Vec<&str> = package.split('@').collect();
-            if parts.len() == 2 {
-                add_package(parts[0], parts[1]);
-            } else {
-                eprintln!("Invalid package format. Use package@version.");
+        Commands::Add { packages } => {
+            for package in packages {
+                let parts: Vec<&str> = package.split('@').collect();
+                if parts.len() == 2 {
+                    add_package(parts[0], parts[1]);
+                } else {
+                    eprintln!("Invalid package format for '{}'. Use package@version.", package);
+                }
             }
         }
         Commands::Remove { package_name } => {
