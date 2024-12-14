@@ -12,11 +12,9 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Adds a package to the project
-    Add {
-        /// Name of the package to add
-        package_name: String,
-        /// Package version
-        version: String
+    Add {  
+        /// Package in the format package@version
+        package: String,
     },
     /// Removes a package from the project
     Remove {
@@ -29,8 +27,13 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Add { package_name , version} => {
-            add_package(package_name, version);
+        Commands::Add { package } => {
+            let parts: Vec<&str> = package.split('@').collect();
+            if parts.len() == 2 {
+                add_package(parts[0], parts[1]);
+            } else {
+                eprintln!("Invalid package format. Use package@version.");
+            }
         }
         Commands::Remove { package_name } => {
             remove_package(package_name);
