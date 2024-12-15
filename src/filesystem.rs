@@ -10,7 +10,7 @@ use crate::version::VersionInfo;
 /// Linux: ~/.cache/noir-libs/
 /// macOS: ~/Library/Caches/com.walnut.noir-libs/
 /// Windows: C:\Users\Username\AppData\Local\walnut\noir-libs\Cache
-fn get_cache_dir() -> Option<PathBuf> {
+pub fn get_cache_dir() -> Option<PathBuf> {
     ProjectDirs::from("com", "walnut", "noir-libs")
         .map(|proj_dirs| proj_dirs.cache_dir().to_path_buf())
 }
@@ -32,7 +32,7 @@ pub fn prepare_cache_dir() -> PathBuf {
     cache_dir
 }
 
-pub fn extract_package(path_with_version: &PathBuf, path_without_version : &PathBuf, version: &str) -> io::Result<()> {
+pub fn extract_package(path_with_version: &PathBuf, path_without_version : &PathBuf, version: &str) -> io::Result<PathBuf> {
     println!("WITH {:?} WITHOUT {:?} VER {:?}", path_with_version, path_without_version, version);
 
     let extract_dir = path_without_version.join(version);
@@ -47,5 +47,5 @@ pub fn extract_package(path_with_version: &PathBuf, path_without_version : &Path
     // Unpack the archive into the extract_dir
     archive.unpack(&extract_dir)?;
 
-    Ok(())
+    Ok(extract_dir)
 }
