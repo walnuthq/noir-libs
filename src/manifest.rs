@@ -61,11 +61,11 @@ pub fn get_dependencies(manifest: PathBuf) -> Vec<(String, String)> {
     // Ensure that the "dependencies" table exists
     if let Some(deps) = doc.get("dependencies").and_then(|d| d.as_table()) {
         for (key, value) in deps.iter() {
-            println!("Found {} ja {}", key, value);
+            //println!("Found {} ja {}", key, value);
             if let Some(path) = value.get("path").and_then(|p| p.as_str()) {
-                println!("On path {}", path);
+                //  println!("On path {}", path);
                 if let Some(version) = extract_version_from_path(path) {
-                    println!("On version {}", version);
+                    //    println!("On version {}", version);
                     dependencies.push((key.to_string(), version));
                 }
             }

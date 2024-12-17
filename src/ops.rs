@@ -63,10 +63,9 @@ fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathB
     let path_without_version = cache_root.join(package_name);
 
     download_remote(&path_with_version, package_name, version);
-    let cache_dir = extract_package(&path_with_version, &path_without_version, version)
-        .expect("Problem extracting package");
-    cache_dir
+    extract_package(&path_with_version, &path_without_version, version)
+        .expect("Problem extracting package")
 }
 pub fn remove(package_name: &str) {
-    remove_package(&package_name);
+    remove_package(package_name);
 }
