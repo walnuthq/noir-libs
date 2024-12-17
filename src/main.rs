@@ -16,10 +16,10 @@ enum Commands {
         /// Packages in the format package@version
         packages: Vec<String>,
     },
-    /// Removes a package from the project
+    /// Removes packages from the project
     Remove {
-        /// Name of the package to remove
-        package_name: String,
+        /// Names of the packages to remove
+        package_names: Vec<String>, // Changed from package_name to package_names
     },
 }
 
@@ -40,16 +40,19 @@ fn main() {
                 }
             }
         }
-        Commands::Remove { package_name } => {
-            remove_package(package_name);
+        Commands::Remove { package_names } => {
+            // Updated to use package_names
+            for package_name in package_names {
+                remove_package(package_name);
+            }
         }
     }
 }
 
 fn add_package(package_name: &str, version: &str) {
-    add(&package_name, &version);
+    add(package_name, version);
 }
 
 fn remove_package(package_name: &str) {
-    remove(&package_name);
+    remove(package_name);
 }
