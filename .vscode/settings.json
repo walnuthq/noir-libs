@@ -1,0 +1,39 @@
+{
+    // Use rust-analyzer for Rust language features
+    "rust-analyzer.checkOnSave.command": "clippy",
+    "rust-analyzer.cargo.allFeatures": true,
+    "rust-analyzer.formatOnSave.enable": true,
+
+    // Enable auto-formatting with rustfmt
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+
+    // Enable auto-save (optional)
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+
+    // Editor settings for better coding experience
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": true,
+    "editor.trimAutoWhitespace": true,
+
+    // Set up line length for better readability
+    "editor.rulers": [100],
+
+    // Enable highlighting of matching brackets and indentation guides
+    "editor.matchBrackets": "always",
+    "editor.guides.indentation": true,
+
+    // Enable error diagnostics
+    "rust-analyzer.diagnostics.enable": true,
+
+    // CodeLens (optional) for showing inline info
+    "rust-analyzer.codelens.run": true,
+
+    // Rustfmt configuration
+    "rust-analyzer.rustfmt.overrideCommand": [
+        "cargo",
+        "fmt"
+    ]
+}

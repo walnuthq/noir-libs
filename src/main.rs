@@ -12,7 +12,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Adds a package to the project
-    Add {  
+    Add {
         /// Packages in the format package@version
         packages: Vec<String>,
     },
@@ -33,7 +33,10 @@ fn main() {
                 if parts.len() == 2 {
                     add_package(parts[0], parts[1]);
                 } else {
-                    eprintln!("Invalid package format for '{}'. Use package@version.", package);
+                    eprintln!(
+                        "Invalid package format for '{}'. Use package@version.",
+                        package
+                    );
                 }
             }
         }
@@ -44,7 +47,7 @@ fn main() {
 }
 
 fn add_package(package_name: &str, version: &str) {
-     add(&package_name, &version);
+    add(&package_name, &version);
 }
 
 fn remove_package(package_name: &str) {

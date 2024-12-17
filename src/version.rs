@@ -27,7 +27,7 @@ impl fmt::Display for VersionInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.version)?;
 
-       /*  if let Some(ref ci) = self.commit_info {
+        /*  if let Some(ref ci) = self.commit_info {
             write!(f, " ({} {})", ci.short_commit_hash, ci.commit_date)?;
         }; */
         Ok(())
@@ -65,7 +65,7 @@ pub fn version() -> VersionInfo {
         format!("1.{}.{}", minor, patch)
     });
 
-/*     let release_channel = option_env_str!("CFG_RELEASE_CHANNEL");
+    /*     let release_channel = option_env_str!("CFG_RELEASE_CHANNEL");
     let commit_info = option_env_str!("CARGO_COMMIT_HASH").map(|commit_hash| CommitInfo {
         short_commit_hash: option_env_str!("CARGO_COMMIT_SHORT_HASH").unwrap(),
         commit_hash,

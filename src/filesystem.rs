@@ -1,4 +1,8 @@
-use std::{fs::{self, File}, io, path::{Path, PathBuf}};
+use std::{
+    fs::{self, File},
+    io,
+    path::{Path, PathBuf},
+};
 
 use directories::ProjectDirs;
 use flate2::read::GzDecoder;
@@ -18,7 +22,10 @@ pub fn get_cache_dir() -> Option<PathBuf> {
 fn ensure_dir(path: &Path) -> std::io::Result<()> {
     if path.exists() {
         if path.is_file() {
-            return Err(io::Error::new(io::ErrorKind::AlreadyExists, "A file with the same name as the directory exists"));
+            return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                "A file with the same name as the directory exists",
+            ));
         }
     } else {
         fs::create_dir_all(path)?;
@@ -32,8 +39,15 @@ pub fn prepare_cache_dir() -> PathBuf {
     cache_dir
 }
 
-pub fn extract_package(path_with_version: &PathBuf, path_without_version : &PathBuf, version: &str) -> io::Result<PathBuf> {
-    println!("WITH {:?} WITHOUT {:?} VER {:?}", path_with_version, path_without_version, version);
+pub fn extract_package(
+    path_with_version: &PathBuf,
+    path_without_version: &PathBuf,
+    version: &str,
+) -> io::Result<PathBuf> {
+    println!(
+        "WITH {:?} WITHOUT {:?} VER {:?}",
+        path_with_version, path_without_version, version
+    );
 
     let extract_dir = path_without_version.join(version);
     // Ensure the extract_dir is created

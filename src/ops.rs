@@ -1,6 +1,11 @@
 use std::{env, path::PathBuf};
 
-use crate::{filesystem::{extract_package, get_cache_dir, prepare_cache_dir}, manifest::{get_dependencies, remove_package,  write_package_dep}, network::download_remote, MANIFEST_FILE_NAME};
+use crate::{
+    filesystem::{extract_package, get_cache_dir, prepare_cache_dir},
+    manifest::{get_dependencies, remove_package, write_package_dep},
+    network::download_remote,
+    MANIFEST_FILE_NAME,
+};
 
 pub fn add(package_name: &str, version: &str) {
     println!("Adding package: {}", package_name);
@@ -25,31 +30,43 @@ pub fn store_package(package_name: &str, version: &str, project_dir: PathBuf, ca
 
         for (sub_dep_name, sub_dep_version) in sub_deps {
             println!("Found dep {} {}", sub_dep_name, &sub_dep_version);
-            store_package(&sub_dep_name, &sub_dep_version, project_dir.clone(), cache_dir.clone());
+            store_package(
+                &sub_dep_name,
+                &sub_dep_version,
+                project_dir.clone(),
+                cache_dir.clone(),
+            );
         }
     }
 }
 
-
-fn add_dep_to_manifest(project_dir: PathBuf, cache_dir: PathBuf, package_name: &str, version: &str) -> PathBuf {
+fn add_dep_to_manifest(
+    project_dir: PathBuf,
+    cache_dir: PathBuf,
+    package_name: &str,
+    version: &str,
+) -> PathBuf {
     // Construct the path to the cached dependency
     let cached_package_path = cache_dir.join(package_name).join(version);
-println!("Writing path {:?}", cached_package_path);
+    println!("Writing path {:?}", cached_package_path);
     // Write the dependency into the project's manifest
-    let manifest_path = write_package_dep(project_dir, package_name, cached_package_path.to_str().unwrap());
+    let manifest_path = write_package_dep(
+        project_dir,
+        package_name,
+        cached_package_path.to_str().unwrap(),
+    );
     manifest_path
 }
 
 fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathBuf {
-    
     let path_with_version = cache_root.join(format!("{}-{}", package_name, version));
-    let path_without_version = cache_root.join( package_name);
+    let path_without_version = cache_root.join(package_name);
 
     download_remote(&path_with_version, package_name, version);
-    let cache_dir = extract_package(&path_with_version, &path_without_version, version).expect("Problem extracting package");
+    let cache_dir = extract_package(&path_with_version, &path_without_version, version)
+        .expect("Problem extracting package");
     cache_dir
 }
 pub fn remove(package_name: &str) {
-
-    remove_package( &package_name);
+    remove_package(&package_name);
 }

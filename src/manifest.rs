@@ -1,13 +1,16 @@
-use std::{env, path::{Path, PathBuf}};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 
 use toml_edit::DocumentMut;
 
 use crate::MANIFEST_FILE_NAME;
 
-pub fn write_package_dep(project_dir : PathBuf, package_name: &str, path : &str) -> PathBuf {
+pub fn write_package_dep(project_dir: PathBuf, package_name: &str, path: &str) -> PathBuf {
     println!("Adding value {}", path);
 
-   // let pwd = env::current_dir().expect("Unable to find current folder");
+    // let pwd = env::current_dir().expect("Unable to find current folder");
     let manifest = try_find_manifest(&project_dir).unwrap();
     let content = std::fs::read_to_string(manifest.clone()).expect("Cannot read file");
     let mut doc = content.parse::<DocumentMut>().expect("Invalid TOML");
@@ -16,7 +19,8 @@ pub fn write_package_dep(project_dir : PathBuf, package_name: &str, path : &str)
     let mut table = toml_edit::InlineTable::default();
     table.get_or_insert("path", path);
     // Assign to the dependencies table
-    doc["dependencies"][package_name] = toml_edit::Item::Value(toml_edit::Value::InlineTable(table));
+    doc["dependencies"][package_name] =
+        toml_edit::Item::Value(toml_edit::Value::InlineTable(table));
 
     std::fs::write(manifest.clone(), doc.to_string()).expect("Cannot write file");
 
@@ -33,7 +37,7 @@ pub fn remove_package(package_name: &str) {
 
     // Parse the content as TOML
     let mut doc = content.parse::<DocumentMut>().expect("Invalid TOML");
-    
+
     // Ensure that the "dependencies" table exists and is mutable
     if let Some(dependencies) = doc["dependencies"].as_table_mut() {
         // Remove the specified package from the dependencies
@@ -75,12 +79,6 @@ fn extract_version_from_path(path: &str) -> Option<String> {
     let filename = path.split('/').last()?;
     Some(filename.to_string())
 }
-
-
-
-
-
-
 
 pub fn try_find_manifest(start_dir: &Path) -> Option<PathBuf> {
     let mut root = Some(start_dir);
