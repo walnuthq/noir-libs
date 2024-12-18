@@ -1,4 +1,4 @@
-use crate::REPOSITORY_URL;
+use crate::{COMPANY_NAME, COMPANY_TLD, REPOSITORY_URL};
 use directories::ProjectDirs;
 use std::path::PathBuf;
 
@@ -7,7 +7,7 @@ use std::path::PathBuf;
 /// macOS: ~/Library/Caches/com.walnut.noir-libs/
 /// Windows: C:\Users\Username\AppData\Local\walnut\noir-libs\Cache
 pub fn get_cache_dir() -> Option<PathBuf> {
-    ProjectDirs::from("com", "walnut", "noir-libs")
+    ProjectDirs::from(COMPANY_TLD, COMPANY_NAME, env!("CARGO_PKG_NAME"))
         .map(|proj_dirs| proj_dirs.cache_dir().to_path_buf())
 }
 
