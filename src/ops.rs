@@ -25,12 +25,12 @@ pub fn store_package(cache_root: PathBuf, project_dir: PathBuf, package_name: &s
 
     // Resolve sub-dependencies (if any)
     let package_manifest_path = package_cache_path.join(MANIFEST_FILE_NAME);
-    println!("Searching deps {:?}", package_manifest_path);
+    //println!("Searching deps {:?}", package_manifest_path);
     if package_manifest_path.is_file() {
         let sub_deps = get_dependencies(package_manifest_path);
 
         for (sub_dep_name, sub_dep_version) in sub_deps {
-            println!("Found dep {} {}", sub_dep_name, &sub_dep_version);
+            //      println!("Found dep {} {}", sub_dep_name, &sub_dep_version);
             store_package(
                 project_dir.clone(),
                 cache_root.clone(),

@@ -4,7 +4,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use directories::ProjectDirs;
 use flate2::read::GzDecoder;
 use tar::Archive;
 

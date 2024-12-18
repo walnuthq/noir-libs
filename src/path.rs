@@ -1,8 +1,6 @@
-use std::path::PathBuf;
-
-use directories::ProjectDirs;
-
 use crate::REPOSITORY_URL;
+use directories::ProjectDirs;
+use std::path::PathBuf;
 
 /// Gets a cache directory, based on operation system
 /// Linux: ~/.cache/noir-libs/
