@@ -4,7 +4,7 @@ use crate::{
     filesystem::{extract_package, prepare_cache_dir},
     manifest::{get_dependencies, remove_package, write_package_dep},
     network::download_remote,
-    path::{get_cache_storage, get_package_dir},
+    path::{get_cache_storage, get_package_dir, get_package_url},
     MANIFEST_FILE_NAME,
 };
 
@@ -62,7 +62,8 @@ fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathB
     let package_storage = get_cache_storage(cache_root.clone(), package_name, version); //cache_root.join(format!("{}-{}", package_name, version));
     let cached_package_path = get_package_dir(cache_root, package_name, version);
 
-    download_remote(&package_storage, package_name, version);
+    let url = get_package_url(package_name, version);
+    download_remote(&package_storage, &url);
     extract_package(&package_storage, &cached_package_path).expect("Problem extracting package");
 
     cached_package_path
