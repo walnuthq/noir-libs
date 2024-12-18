@@ -8,17 +8,36 @@ use directories::ProjectDirs;
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::version::VersionInfo;
+use crate::path::get_cache_dir;
 
-/// Gets a cache directory, based on operation system
-/// Linux: ~/.cache/noir-libs/
-/// macOS: ~/Library/Caches/com.walnut.noir-libs/
-/// Windows: C:\Users\Username\AppData\Local\walnut\noir-libs\Cache
-pub fn get_cache_dir() -> Option<PathBuf> {
-    ProjectDirs::from("com", "walnut", "noir-libs")
-        .map(|proj_dirs| proj_dirs.cache_dir().to_path_buf())
+pub fn prepare_cache_dir() -> PathBuf {
+    let cache_dir = get_cache_dir().expect("Could not determine cache directory");
+    ensure_dir(&cache_dir).expect("Failed to setup cache directory");
+    cache_dir
 }
 
+/// Extracts a package from a tar.gz file.
+///
+/// # Parameters
+/// - `path_with_version`: The path to the tar.gz file containing the package.
+/// - `path_without_version`: The base path where the package should be extracted.
+/// - `version`: The version of the package being extracted.
+///
+/// # Returns
+/// Returns the path to the directory where the package was extracted, or an error if the extraction fails.
+
+pub fn extract_package(package_path: &Path, extract_dir: &Path) -> io::Result<()> {
+    // Open the tar.gz file
+    let tar_gz = File::open(package_path)?;
+    let gz = GzDecoder::new(tar_gz);
+    let mut archive = Archive::new(gz);
+
+    archive.unpack(extract_dir)?;
+
+    Ok(())
+}
+
+/// Ensures the cache directory exists
 fn ensure_dir(path: &Path) -> std::io::Result<()> {
     if path.exists() {
         if path.is_file() {
@@ -31,35 +50,4 @@ fn ensure_dir(path: &Path) -> std::io::Result<()> {
         fs::create_dir_all(path)?;
     }
     Ok(())
-}
-
-pub fn prepare_cache_dir() -> PathBuf {
-    let cache_dir = get_cache_dir().expect("Could not determine cache directory");
-    ensure_dir(&cache_dir).expect("Failed to setup cache directory");
-    cache_dir
-}
-
-pub fn extract_package(
-    path_with_version: &PathBuf,
-    path_without_version: &PathBuf,
-    version: &str,
-) -> io::Result<PathBuf> {
-    println!(
-        "WITH {:?} WITHOUT {:?} VER {:?}",
-        path_with_version, path_without_version, version
-    );
-
-    let extract_dir = path_without_version.join(version);
-    // Ensure the extract_dir is created
-    // ensure_dir(&extract_dir)?;
-
-    // Open the tar.gz file
-    let tar_gz = File::open(path_with_version)?;
-    let gz = GzDecoder::new(tar_gz);
-    let mut archive = Archive::new(gz);
-
-    // Unpack the archive into the extract_dir
-    archive.unpack(&extract_dir)?;
-
-    Ok(extract_dir)
 }

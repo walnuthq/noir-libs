@@ -1,26 +1,27 @@
 use std::{env, path::PathBuf};
 
 use crate::{
-    filesystem::{extract_package, get_cache_dir, prepare_cache_dir},
+    filesystem::{extract_package, prepare_cache_dir},
     manifest::{get_dependencies, remove_package, write_package_dep},
     network::download_remote,
+    path::{get_cache_storage, get_package_dir},
     MANIFEST_FILE_NAME,
 };
 
 pub fn add(package_name: &str, version: &str) {
     println!("Adding package: {}", package_name);
 
+    let cache_root = prepare_cache_dir();
     let pwd = env::current_dir().expect("Unable to find current folder");
-    let cache_dir = get_cache_dir().expect("Cache directory unavailable");
 
-    store_package(&package_name, &version, pwd.clone(), cache_dir.clone());
+    store_package(cache_root.clone(), pwd.clone(), package_name, version);
 
-    add_dep_to_manifest(pwd, cache_dir, package_name, version);
+    add_dep_to_manifest(pwd, cache_root, package_name, version);
 }
 
-pub fn store_package(package_name: &str, version: &str, project_dir: PathBuf, cache_dir: PathBuf) {
+pub fn store_package(cache_root: PathBuf, project_dir: PathBuf, package_name: &str, version: &str) {
     // Get the package into the cache
-    let package_cache_path = get_to_cache(cache_dir.clone(), package_name, version);
+    let package_cache_path = get_to_cache(cache_root.clone(), package_name, version);
 
     // Resolve sub-dependencies (if any)
     let package_manifest_path = package_cache_path.join(MANIFEST_FILE_NAME);
@@ -31,10 +32,10 @@ pub fn store_package(package_name: &str, version: &str, project_dir: PathBuf, ca
         for (sub_dep_name, sub_dep_version) in sub_deps {
             println!("Found dep {} {}", sub_dep_name, &sub_dep_version);
             store_package(
+                project_dir.clone(),
+                cache_root.clone(),
                 &sub_dep_name,
                 &sub_dep_version,
-                project_dir.clone(),
-                cache_dir.clone(),
             );
         }
     }
@@ -42,13 +43,12 @@ pub fn store_package(package_name: &str, version: &str, project_dir: PathBuf, ca
 
 fn add_dep_to_manifest(
     project_dir: PathBuf,
-    cache_dir: PathBuf,
+    cache_root: PathBuf,
     package_name: &str,
     version: &str,
 ) -> PathBuf {
     // Construct the path to the cached dependency
-    let cached_package_path = cache_dir.join(package_name).join(version);
-    println!("Writing path {:?}", cached_package_path);
+    let cached_package_path = get_package_dir(cache_root, package_name, version);
     // Write the dependency into the project's manifest
     let manifest_path = write_package_dep(
         project_dir,
@@ -59,13 +59,15 @@ fn add_dep_to_manifest(
 }
 
 fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathBuf {
-    let path_with_version = cache_root.join(format!("{}-{}", package_name, version));
-    let path_without_version = cache_root.join(package_name);
+    let package_storage = get_cache_storage(cache_root.clone(), package_name, version); //cache_root.join(format!("{}-{}", package_name, version));
+    let cached_package_path = get_package_dir(cache_root, package_name, version);
 
-    download_remote(&path_with_version, package_name, version);
-    extract_package(&path_with_version, &path_without_version, version)
-        .expect("Problem extracting package")
+    download_remote(&package_storage, package_name, version);
+    extract_package(&package_storage, &cached_package_path).expect("Problem extracting package");
+
+    cached_package_path
 }
+
 pub fn remove(package_name: &str) {
     remove_package(package_name);
 }

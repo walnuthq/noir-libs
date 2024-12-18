@@ -11,7 +11,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Adds a package to the project
+    /// Adds packages to the project
     Add {
         /// Packages in the format package@version
         packages: Vec<String>,
@@ -19,7 +19,7 @@ enum Commands {
     /// Removes packages from the project
     Remove {
         /// Names of the packages to remove
-        package_names: Vec<String>, // Changed from package_name to package_names
+        package_names: Vec<String>,
     },
 }
 
