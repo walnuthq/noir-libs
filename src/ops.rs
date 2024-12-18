@@ -9,8 +9,6 @@ use crate::{
 };
 
 pub fn add(package_name: &str, version: &str) {
-    println!("Adding package: {}", package_name);
-
     let cache_root = prepare_cache_dir();
     let pwd = env::current_dir().expect("Unable to find current folder");
 
@@ -58,6 +56,18 @@ fn add_dep_to_manifest(
     manifest_path
 }
 
+/// Retrieves a package from the cache, downloading it if necessary,
+/// and extracts it to the specified directory.
+///
+/// # Arguments
+///
+/// * `cache_root` - The root directory of the cache.
+/// * `package_name` - The name of the package to retrieve.
+/// * `version` - The version of the package to retrieve.
+///
+/// # Returns
+///
+/// Returns the path to the cached package.
 fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathBuf {
     let package_storage = get_cache_storage(cache_root.clone(), package_name, version); //cache_root.join(format!("{}-{}", package_name, version));
     let cached_package_path = get_package_dir(cache_root, package_name, version);
@@ -70,5 +80,6 @@ fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathB
 }
 
 pub fn remove(package_name: &str) {
-    remove_package(package_name);
+    let pwd = env::current_dir().expect("Unable to find current folder");
+    remove_package(pwd, package_name);
 }
