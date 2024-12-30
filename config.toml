@@ -1,0 +1,4 @@
+# Default configuration settings
+company_name = "walnut"
+company_tld = "dev"
+repository_url = "http://127.0.0.1:8888"

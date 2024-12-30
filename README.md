@@ -11,6 +11,7 @@
 1. Start a local HTTP server from that folder, for example with `python3 -m http.server 8888`
 1. Compile this tool: `cargo build --release`
 1. Copy the binary `noir-libs` from `target/release` folder into your example folder
+1. Copy the `config.toml` file into your example folder
 1. In your example folder, start adding the needed dependencies:
     1. `./noir-libs add easy_private_state@0.67.0`
     1. `./noir-libs add aztec@0.67.0`

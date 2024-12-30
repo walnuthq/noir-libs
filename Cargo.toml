@@ -7,6 +7,7 @@ edition = "2021"
 anyhow = "1"
 camino = { version = "1", features = ["serde1"] }
 clap = { version = "4.5.23", features = ["derive"] }
+config = { version = "0.15.4", features = ["toml"] }
 curl = "0.4.46"
 directories = "5"
 flate2 = { version = "1.0.30", default-features = false, features = ["zlib"] }
@@ -21,3 +22,4 @@ tokio = { version = "1", features = ["macros", "io-util", "process", "rt", "rt-m
 toml_edit = "0.22.22"
 tracing = "0.1"
 which = "5"
+serde = { version = "1.0", features = ["derive"] }

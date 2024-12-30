@@ -1,14 +1,20 @@
-use crate::{COMPANY_NAME, COMPANY_TLD, REPOSITORY_URL};
 use directories::ProjectDirs;
 use std::path::PathBuf;
+
+use crate::load_settings;
 
 /// Gets a cache directory, based on operation system
 /// Linux: /home/user/.cache/noir-libs/
 /// macOS: /Users/user/Library/Application Support/com.walnut.noir-libs/
 /// Windows: C:\Users\Alice\AppData\Roaming\walnut\noir-libs
 pub fn get_cache_dir() -> Option<PathBuf> {
-    ProjectDirs::from(COMPANY_TLD, COMPANY_NAME, env!("CARGO_PKG_NAME"))
-        .map(|proj_dirs| proj_dirs.cache_dir().to_path_buf())
+    let settings = load_settings();
+    ProjectDirs::from(
+        &settings.company_tld,
+        &settings.company_name,
+        env!("CARGO_PKG_NAME"),
+    )
+    .map(|proj_dirs| proj_dirs.cache_dir().to_path_buf())
 }
 
 /// Retrieves the filename of the package
@@ -32,9 +38,10 @@ pub fn get_package_dir(cache_root: PathBuf, package_name: &str, version: &str) -
 /// Retrieves the URL where to retrieve a package
 /// Example: http://127.0.0.1:8888/value_note/0.67.0/value_note-0.67.0
 pub fn get_package_url(package_name: &str, version: &str) -> String {
+    let settings = load_settings();
     format!(
         "{}/{}/{}/{}",
-        REPOSITORY_URL,
+        settings.repository_url,
         package_name,
         version,
         get_package_filename(package_name, version)
