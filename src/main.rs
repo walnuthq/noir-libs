@@ -1,7 +1,7 @@
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use noir_libs::ops::{add, remove};
 
-/// A CLI package manager for Noir
+/// A CLI package manager for Noir | noir-libs.org
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -28,6 +28,14 @@ fn main() {
 
     match &cli.command {
         Commands::Add { packages } => {
+            if packages.is_empty() {
+                Cli::command()
+                    .find_subcommand_mut("add")
+                    .unwrap()
+                    .print_help()
+                    .unwrap();
+                std::process::exit(1);
+            }
             for package in packages {
                 let parts: Vec<&str> = package.split('@').collect();
                 if parts.len() == 2 {
@@ -37,11 +45,24 @@ fn main() {
                         "Invalid package format for '{}'. Use package@version.",
                         package
                     );
+                    Cli::command()
+                        .find_subcommand_mut("add")
+                        .unwrap()
+                        .print_help()
+                        .unwrap();
+                    std::process::exit(1);
                 }
             }
         }
         Commands::Remove { package_names } => {
-            // Updated to use package_names
+            if package_names.is_empty() {
+                Cli::command()
+                    .find_subcommand_mut("remove")
+                    .unwrap()
+                    .print_help()
+                    .unwrap();
+                std::process::exit(1);
+            }
             for package_name in package_names {
                 remove_package(package_name);
             }
