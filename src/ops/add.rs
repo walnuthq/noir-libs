@@ -17,7 +17,7 @@ pub fn add(package_name: &str, version: &str) {
     add_dep_to_manifest(pwd, cache_root, package_name, version);
 }
 
-pub fn store_package(cache_root: PathBuf, project_dir: PathBuf, package_name: &str, version: &str) {
+fn store_package(cache_root: PathBuf, project_dir: PathBuf, package_name: &str, version: &str) {
     // Get the package into the cache
     let package_cache_path = get_to_cache(cache_root.clone(), package_name, version);
 

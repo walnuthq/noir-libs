@@ -80,8 +80,7 @@ pub fn get_dependencies(manifest: PathBuf) -> Vec<(String, String)> {
 /// # Returns
 ///
 /// An `Option<PathBuf>` that contains the path to the manifest file if found, or `None` if not found.
-///
-pub fn try_find_manifest(start_dir: &Path) -> Option<PathBuf> {
+fn try_find_manifest(start_dir: &Path) -> Option<PathBuf> {
     let mut root = Some(start_dir);
     while let Some(path) = root {
         let manifest = path.join(MANIFEST_FILE_NAME);
