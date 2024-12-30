@@ -1,5 +1,14 @@
 # Noir package manager
 
+Noir-libs is a package manager to be used with Noir. It retrieves and manages packages.
+
+## Package locations
+
+The fetched packages are cached in a cache folder. Exact location depends on the used operating system:
+- Linux: /home/user/.cache/noir-libs/
+- macOS: /Users/user/Library/Application Support/com.walnut.noir-libs/
+- Windows: C:\Users\Alice\AppData\Roaming\walnut\noir-libs
+
 ## How to test
 
 1. Get the example package `example.tar.gz` from `tests/test_files`, extract to some totally unrelated folder
