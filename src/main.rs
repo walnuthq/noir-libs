@@ -71,9 +71,9 @@ fn main() {
 }
 
 fn add_package(package_name: &str, version: &str) {
-    add(package_name, version);
+    noir_libs::ops::add::add(package_name, version);
 }
 
 fn remove_package(package_name: &str) {
-    remove(package_name);
+    noir_libs::ops::remove::remove(package_name);
 }
