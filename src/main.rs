@@ -71,9 +71,9 @@ fn main() {
 }
 
 fn add_package(package_name: &str, version: &str) {
-    noir_libs::ops::add::add(package_name, version);
+    crate::add::add(package_name, version);
 }
 
 fn remove_package(package_name: &str) {
-    noir_libs::ops::remove::remove(package_name);
+    crate::remove::remove(package_name);
 }
