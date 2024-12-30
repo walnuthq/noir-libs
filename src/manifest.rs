@@ -56,22 +56,19 @@ pub fn get_dependencies(manifest: PathBuf) -> Vec<(String, String)> {
     // Parse the content as TOML
     let doc = content.parse::<DocumentMut>().expect("Invalid TOML");
 
-    // Initialize a Vec to store dependencies and versions
-    let mut dependencies = Vec::new();
-
-    // Ensure that the "dependencies" table exists
+    // Ensure that the "dependencies" table exists and map dependencies to a vector
     if let Some(deps) = doc.get("dependencies").and_then(|d| d.as_table()) {
-        for (key, value) in deps.iter() {
-            // Supports only deps of format: aztec = { path = "../../aztec/0.67.0" }
-            if let Some(path) = value.get("path").and_then(|p| p.as_str()) {
-                if let Some(version) = extract_version_from_path(path) {
-                    dependencies.push((key.to_string(), version));
-                }
-            }
-        }
+        return deps
+            .iter()
+            .filter_map(|(key, value)| {
+                value.get("path").and_then(|p| p.as_str()).and_then(|path| {
+                    extract_version_from_path(path).map(|version| (key.to_string(), version))
+                })
+            })
+            .collect();
     }
 
-    dependencies
+    Vec::new()
 }
 
 /// Tries to find the TOML manifest file starting from the given directory.
