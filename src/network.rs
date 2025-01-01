@@ -22,6 +22,17 @@ pub fn download_remote(output_path: &Path, url: &str) {
     copy(&mut response, &mut dest).expect("Failed to write to file");
 }
 
+pub fn get_latest_version(url: String) -> String {
+    // Temp implementation
+    match url.as_str() {
+        "http://localhost:3001/api/v1/packages/aztec/latest" => "0.67.0".to_string(),
+        "http://localhost:3001/api/v1/packages/value_note/latest" => "0.67.0".to_string(),
+        "http://localhost:3001/api/v1/packages/easy_private_state/latest" => "0.67.0".to_string(),
+        "http://localhost:3001/api/v1/packages/protocol_types/latest" => "0.66.0".to_string(),
+        _ => panic!("Invalid packaaaaaaaage2 temp"),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

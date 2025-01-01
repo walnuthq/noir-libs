@@ -3,8 +3,8 @@ use std::{env, path::PathBuf};
 use crate::{
     filesystem::{extract_package, prepare_cache_dir},
     manifest::{get_dependencies, write_package_dep},
-    network::download_remote,
-    path::{get_cache_storage, get_package_dir, get_package_url},
+    network::{download_remote, get_latest_version},
+    path::{get_cache_storage, get_package_dir, get_package_latest_url, get_package_url},
     MANIFEST_FILE_NAME,
 };
 
@@ -12,9 +12,11 @@ pub fn add(package_name: &str, version: &str) {
     let cache_root = prepare_cache_dir();
     let pwd = env::current_dir().expect("Unable to find current folder");
 
-    store_package(cache_root.clone(), pwd.clone(), package_name, version);
+    let used_version = get_used_version(package_name, version);
 
-    add_dep_to_manifest(pwd, cache_root, package_name, version);
+    store_package(cache_root.clone(), pwd.clone(), package_name, &used_version);
+
+    add_dep_to_manifest(pwd, cache_root, package_name, &used_version);
 }
 
 fn store_package(cache_root: PathBuf, project_dir: PathBuf, package_name: &str, version: &str) {
@@ -69,7 +71,7 @@ fn add_dep_to_manifest(
 ///
 /// Returns the path to the cached package.
 fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathBuf {
-    let package_storage = get_cache_storage(cache_root.clone(), package_name, version); //cache_root.join(format!("{}-{}", package_name, version));
+    let package_storage = get_cache_storage(cache_root.clone(), package_name, version);
     let cached_package_path = get_package_dir(cache_root, package_name, version);
 
     // A temporary hack
@@ -87,4 +89,27 @@ fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathB
     extract_package(&package_storage, &cached_package_path).expect("Problem extracting package");
 
     cached_package_path
+}
+
+/// Retrieves the used version of a package.
+///
+/// This function checks if the requested version is "latest". If so, it fetches
+/// the latest version available for the specified package. Otherwise, it returns
+/// the provided version as is.
+///
+/// # Arguments
+///
+/// * `package_name` - The name of the package for which to retrieve the version.
+/// * `version` - The version string, which can be "latest" or a specific version.
+///
+/// # Returns
+///
+/// Returns a `String` representing the version of the package.
+fn get_used_version(package_name: &str, version: &str) -> String {
+    if version == "latest" {
+        let latest_version_url = get_package_latest_url(package_name);
+        get_latest_version(latest_version_url).to_string()
+    } else {
+        version.to_string()
+    }
 }
