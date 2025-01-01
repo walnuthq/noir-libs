@@ -13,7 +13,7 @@ struct Cli {
 enum Commands {
     /// Adds packages to the project
     Add {
-        /// Packages in the format package@version
+        /// Packages in the format "package@version" or "package" for the latest version
         packages: Vec<String>,
     },
     /// Removes packages from the project
@@ -38,20 +38,12 @@ fn main() {
             }
             for package in packages {
                 let parts: Vec<&str> = package.split('@').collect();
-                if parts.len() == 2 {
-                    add_package(parts[0], parts[1]);
+                let version = if parts.len() == 2 {
+                    parts[1]
                 } else {
-                    eprintln!(
-                        "Invalid package format for '{}'. Use package@version.",
-                        package
-                    );
-                    Cli::command()
-                        .find_subcommand_mut("add")
-                        .unwrap()
-                        .print_help()
-                        .unwrap();
-                    std::process::exit(1);
-                }
+                    "latest" // Use "latest" if no version is specified
+                };
+                add_package(parts[0], version);
             }
         }
         Commands::Remove { package_names } => {
