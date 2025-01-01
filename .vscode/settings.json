@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.checkOnSave.command": "clippy",
+    "rust-analyzer.formatOnSave.enable": false, // Disable rust-analyzer's formatting
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+}

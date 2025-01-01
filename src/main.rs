@@ -1,6 +1,7 @@
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
+use noir_libs::ops::{add, remove};
 
-/// A CLI package manager for Noir
+/// A CLI package manager for Noir | noir-libs.org
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -10,15 +11,15 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Adds a package to the project
+    /// Adds packages to the project
     Add {
-        /// Name of the package to add
-        package_name: String,
+        /// Packages in the format "package@version" or "package" for the latest version
+        packages: Vec<String>,
     },
-    /// Removes a package from the project
+    /// Removes packages from the project
     Remove {
-        /// Name of the package to remove
-        package_name: String,
+        /// Names of the packages to remove
+        package_names: Vec<String>,
     },
 }
 
@@ -26,21 +27,45 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Add { package_name } => {
-            add_package(package_name);
+        Commands::Add { packages } => {
+            if packages.is_empty() {
+                Cli::command()
+                    .find_subcommand_mut("add")
+                    .unwrap()
+                    .print_help()
+                    .unwrap();
+                std::process::exit(1);
+            }
+            for package in packages {
+                let parts: Vec<&str> = package.split('@').collect();
+                let version = if parts.len() == 2 {
+                    parts[1]
+                } else {
+                    "latest" // Use "latest" if no version is specified
+                };
+                add_package(parts[0], version);
+            }
         }
-        Commands::Remove { package_name } => {
-            remove_package(package_name);
+        Commands::Remove { package_names } => {
+            if package_names.is_empty() {
+                Cli::command()
+                    .find_subcommand_mut("remove")
+                    .unwrap()
+                    .print_help()
+                    .unwrap();
+                std::process::exit(1);
+            }
+            for package_name in package_names {
+                remove_package(package_name);
+            }
         }
     }
 }
 
-fn add_package(package_name: &str) {
-    println!("Adding package: {}", package_name);
-    // TODO: Implement package addition logic
+fn add_package(package_name: &str, version: &str) {
+    crate::add::add(package_name, version);
 }
 
 fn remove_package(package_name: &str) {
-    println!("Removing package: {}", package_name);
-    // TODO: Implement package removal logic
+    crate::remove::remove(package_name);
 }
