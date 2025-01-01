@@ -20,7 +20,7 @@ pub fn get_cache_dir() -> Option<PathBuf> {
 /// Retrieves the filename of the package
 /// Example: value_note-0.67.0
 pub fn get_package_filename(package_name: &str, version: &str) -> String {
-    format!("{}-{}", package_name, version)
+    format!("{}-{}.archive", package_name, version)
 }
 
 /// Retrieves the filename of the package in cache
@@ -38,13 +38,14 @@ pub fn get_package_dir(cache_root: PathBuf, package_name: &str, version: &str) -
 /// Retrieves the URL where to retrieve a package
 /// Example: http://127.0.0.1:8888/value_note/0.67.0/value_note-0.67.0
 pub fn get_package_url(package_name: &str, version: &str) -> String {
+    // http://localhost:3001/api/v1/packages/aztec/0.67.0/download
     let settings = load_settings();
     format!(
-        "{}/{}/{}/{}",
+        "{}/{}/{}/download",
         settings.repository_url,
         package_name,
         version,
-        get_package_filename(package_name, version)
+        //get_package_filename(package_name, version)
     )
 }
 
