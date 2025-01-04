@@ -62,7 +62,6 @@ mod tests {
     fn test_download_remote() {
         let mut server = mockito::Server::new();
 
-        let host = server.host_with_port();
         let url = server.url();
 
         // Create a mock
