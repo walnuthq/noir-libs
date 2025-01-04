@@ -1,4 +1,5 @@
 use reqwest::blocking::get;
+use serde_json::Value;
 use std::fs::File;
 use std::io::copy;
 use std::path::Path;
@@ -22,15 +23,34 @@ pub fn download_remote(output_path: &Path, url: &str) {
     copy(&mut response, &mut dest).expect("Failed to write to file");
 }
 
+/// Retrieves the latest version of a package from the specified URL.
+///
+/// # Arguments
+///
+/// * `url` - A string containing the URL to fetch the latest version from.
+///
+/// # Returns
+///
+/// This function returns a string representing the latest version of the package.
+///
+/// # Errors
+///
+/// This function will panic if the request fails, if the response cannot be read,
+/// or if the JSON cannot be parsed correctly.
 pub fn get_latest_version(url: String) -> String {
-    // Temp implementation
-    match url.as_str() {
-        "http://localhost:3001/api/v1/packages/aztec/latest" => "0.67.0".to_string(),
-        "http://localhost:3001/api/v1/packages/value_note/latest" => "0.67.0".to_string(),
-        "http://localhost:3001/api/v1/packages/easy_private_state/latest" => "0.67.0".to_string(),
-        "http://localhost:3001/api/v1/packages/protocol_types/latest" => "0.66.0".to_string(),
-        _ => panic!("Invalid packaaaaaaaage2 temp"),
-    }
+    println!("Downloading latest package from url {}", url);
+
+    let response = get(&url)
+        .expect("Failed to perform request")
+        .text()
+        .expect("Failed to read response text");
+
+    let json: Value = serde_json::from_str(&response).expect("Failed to parse JSON");
+
+    json["version"]
+        .as_str()
+        .expect("Version field not found or is not a string")
+        .to_string()
 }
 
 #[cfg(test)]
