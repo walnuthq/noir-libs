@@ -49,7 +49,7 @@ pub fn get_package_url(package_name: &str, version: &str) -> String {
 /// Example: http://localhost:3001/api/v1/packages/aztec/latest
 pub fn get_package_latest_url(package_name: &str) -> String {
     let settings = load_settings();
-    format!("{}/{}", settings.repository_url, package_name)
+    format!("{}/{}/latest", settings.repository_url, package_name)
 }
 
 #[cfg(test)]

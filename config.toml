@@ -1,4 +1,4 @@
 # Default configuration settings
 company_name = "walnut"
 company_tld = "dev"
-repository_url = "http://localhost:3001/api/v1/packages"
+repository_url = "https://api.noir-libs.org/api/v1/packages"

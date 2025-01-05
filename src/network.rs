@@ -47,7 +47,7 @@ pub fn get_latest_version(url: String) -> String {
 
     let json: Value = serde_json::from_str(&response).expect("Failed to parse JSON");
 
-    json["version"]
+    json["latest_version"]
         .as_str()
         .expect("Version field not found or is not a string")
         .to_string()
@@ -78,6 +78,45 @@ mod tests {
 
         assert!(output_path.is_file());
 
+        mock.assert();
+    }
+
+    #[test]
+    fn test_get_latest_version() {
+        let mut server = mockito::Server::new();
+
+        let url = server.url();
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/latest")
+            .with_status(200)
+            .with_body(r#"{"latest_version": "1.2.3"}"#)
+            .create();
+
+        let url = format!("{}/latest", url);
+        let version = get_latest_version(url);
+
+        assert_eq!(version, "1.2.3");
+        mock.assert();
+    }
+
+    #[test]
+    fn test_get_latest_version_not_found() {
+        let mut server = mockito::Server::new();
+
+        let url = server.url();
+
+        // Create a mock
+        let mock = server.mock("GET", "/latest").with_status(404).create();
+
+        let url = format!("{}/latest", url);
+
+        let result = std::panic::catch_unwind(|| {
+            get_latest_version(url);
+        });
+
+        assert!(result.is_err());
         mock.assert();
     }
 }
