@@ -1,11 +1,11 @@
 use std::{env, path::PathBuf};
 
 use crate::{
+    config::MANIFEST_FILE_NAME,
     filesystem::{extract_package, prepare_cache_dir},
     manifest::{get_dependencies, write_package_dep},
     network::{download_remote, get_latest_version},
     path::{get_cache_storage, get_package_dir, get_package_latest_url, get_package_url},
-    MANIFEST_FILE_NAME,
 };
 
 pub fn add(package_name: &str, version: &str) {

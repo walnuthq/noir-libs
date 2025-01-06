@@ -1,20 +1,15 @@
 use directories::ProjectDirs;
 use std::path::PathBuf;
 
-use crate::load_settings;
+use crate::config::{COMPANY_NAME, COMPANY_TLD, REPOSITORY_URL};
 
 /// Gets a cache directory, based on operation system
 /// Linux: /home/user/.cache/noir-libs/
 /// macOS: /Users/user/Library/Application Support/com.walnut.noir-libs/
 /// Windows: C:\Users\Alice\AppData\Roaming\walnut\noir-libs
 pub fn get_cache_dir() -> Option<PathBuf> {
-    let settings = load_settings();
-    ProjectDirs::from(
-        &settings.company_tld,
-        &settings.company_name,
-        env!("CARGO_PKG_NAME"),
-    )
-    .map(|proj_dirs| proj_dirs.cache_dir().to_path_buf())
+    ProjectDirs::from(COMPANY_TLD, COMPANY_NAME, env!("CARGO_PKG_NAME"))
+        .map(|proj_dirs| proj_dirs.cache_dir().to_path_buf())
 }
 
 /// Retrieves the filename of the package
@@ -38,18 +33,13 @@ pub fn get_package_dir(cache_root: PathBuf, package_name: &str, version: &str) -
 /// Retrieves the URL where to retrieve a package
 /// Example: http://localhost:3001/api/v1/packages/aztec/0.67.0/download
 pub fn get_package_url(package_name: &str, version: &str) -> String {
-    let settings = load_settings();
-    format!(
-        "{}/{}/{}/download",
-        settings.repository_url, package_name, version
-    )
+    format!("{}/{}/{}/download", REPOSITORY_URL, package_name, version)
 }
 
 /// Retrieves the URL for finding the latest version for a package
 /// Example: http://localhost:3001/api/v1/packages/aztec/latest
 pub fn get_package_latest_url(package_name: &str) -> String {
-    let settings = load_settings();
-    format!("{}/{}/latest", settings.repository_url, package_name)
+    format!("{}/{}/latest", REPOSITORY_URL, package_name)
 }
 
 #[cfg(test)]

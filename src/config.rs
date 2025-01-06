@@ -1,8 +1,4 @@
-use serde::Deserialize;
-
-#[derive(Debug, Deserialize)]
-pub struct Settings {
-    pub company_name: String,
-    pub company_tld: String,
-    pub repository_url: String,
-}
+pub const MANIFEST_FILE_NAME: &str = "Nargo.toml";
+pub const COMPANY_NAME: &str = "walnut";
+pub const COMPANY_TLD: &str = "dev";
+pub const REPOSITORY_URL: &str = "https://api.noir-libs.org/api/v1/packages";

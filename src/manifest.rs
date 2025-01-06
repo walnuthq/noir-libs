@@ -1,7 +1,8 @@
 use std::path::{Path, PathBuf};
 
-use crate::MANIFEST_FILE_NAME;
 use toml_edit::DocumentMut;
+
+use crate::config::MANIFEST_FILE_NAME;
 
 /// Writes a package dependency to the specified TOML manifest file.
 ///

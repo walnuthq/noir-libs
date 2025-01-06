@@ -52,7 +52,7 @@ fn ensure_dir(path: &Path) -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::MANIFEST_FILE_NAME;
+    use crate::config::MANIFEST_FILE_NAME;
 
     use super::*;
     use std::fs;
