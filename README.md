@@ -2,7 +2,7 @@
 
 Noir-libs is a package manager to be used with [Noir](https://noir-lang.org/). It retrieves and manages packages.
 
-Install CLI: `curl -s https://raw.githubusercontent.com/walnuthq/noir-libs/main/download_nori_libs_cli.sh | bash`
+Install CLI: `curl -s https://raw.githubusercontent.com/walnuthq/noir-libs/main/download_noir_libs_cli.sh | bash`
 ## Functionality
 
 The following functionality is supported:

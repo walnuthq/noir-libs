@@ -27,7 +27,7 @@ esac
 
 # Fetch the latest release tag
 echo "Fetching the latest release tag from GitHub..."
-LATEST_TAG=$(curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" | jq -r '.tag_name')
+LATEST_TAG=$(curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" | grep '"tag_name"' | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/')
 
 if [[ -z "$LATEST_TAG" || "$LATEST_TAG" == "null" ]]; then
   echo "Failed to fetch the latest release tag. Please check the repository: $GITHUB_REPO"
