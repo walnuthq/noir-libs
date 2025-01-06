@@ -37,20 +37,29 @@ pub fn download_remote(output_path: &Path, url: &str) {
 ///
 /// This function will panic if the request fails, if the response cannot be read,
 /// or if the JSON cannot be parsed correctly.
-pub fn get_latest_version(url: String) -> String {
-    //println!("Downloading latest package from url {}", url);
+pub fn get_latest_version(url: String) -> Result<String, String> {
+    println!("Downloading latest package from url {}", url);
 
-    let response = get(&url)
-        .expect("Failed to perform request")
-        .text()
-        .expect("Failed to read response text");
+    let response = get(&url).map_err(|e| e.to_string())?;
 
-    let json: Value = serde_json::from_str(&response).expect("Failed to parse JSON");
+    if response.status().is_success() {
+        let aaa = &response.text().map_err(|e| e.to_string())?;
+        let json: Value = serde_json::from_str(aaa).map_err(|e| e.to_string())?;
 
-    json["latest_version"]
-        .as_str()
-        .expect("Version field not found or is not a string")
-        .to_string()
+        Ok(json["latest_version"]
+            .as_str()
+            .ok_or("Version field not found or is not a string")?
+            .to_string())
+    } else {
+        let error_message = response.text().map_err(|e| e.to_string())?;
+        let json_error: Value = serde_json::from_str(&error_message).unwrap_or_default();
+        let message = json_error
+            .get("message")
+            .and_then(Value::as_str)
+            .unwrap_or("Unknown error");
+
+        Err(message.to_string())
+    }
 }
 
 #[cfg(test)]
@@ -95,7 +104,7 @@ mod tests {
             .create();
 
         let url = format!("{}/latest", url);
-        let version = get_latest_version(url);
+        let version = get_latest_version(url).unwrap();
 
         assert_eq!(version, "1.2.3");
         mock.assert();
@@ -113,7 +122,7 @@ mod tests {
         let url = format!("{}/latest", url);
 
         let result = std::panic::catch_unwind(|| {
-            get_latest_version(url);
+            get_latest_version(url).unwrap();
         });
 
         assert!(result.is_err());

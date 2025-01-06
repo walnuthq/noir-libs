@@ -8,17 +8,16 @@ use crate::{
     path::{get_cache_storage, get_package_dir, get_package_latest_url, get_package_url},
 };
 
-pub fn add(package_name: &str, version: &str) -> String {
+pub fn add(package_name: &str, version: &str) -> Result<String, String> {
     let cache_root = prepare_cache_dir();
     let pwd = env::current_dir().expect("Unable to find current folder");
 
-    let used_version = get_used_version(package_name, version);
+    let used_version = get_used_version(package_name, version)?;
 
     store_package(cache_root.clone(), pwd.clone(), package_name, &used_version);
-
     add_dep_to_manifest(pwd, cache_root, package_name, &used_version);
 
-    used_version
+    Ok(used_version)
 }
 
 fn store_package(cache_root: PathBuf, project_dir: PathBuf, package_name: &str, version: &str) {
@@ -98,11 +97,11 @@ fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> PathB
 /// # Returns
 ///
 /// Returns a `String` representing the version of the package.
-fn get_used_version(package_name: &str, version: &str) -> String {
+fn get_used_version(package_name: &str, version: &str) -> Result<String, String> {
     if version == "latest" {
         let latest_version_url = get_package_latest_url(package_name);
-        get_latest_version(latest_version_url).to_string()
+        get_latest_version(latest_version_url)
     } else {
-        version.to_string()
+        Ok(version.to_string())
     }
 }

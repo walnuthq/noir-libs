@@ -63,11 +63,15 @@ fn main() {
 }
 
 fn add_package(package_name: &str, version: &str) {
-    let used_version = crate::add::add(package_name, version);
-    println!(
-        "Successfully installed package {}@{} and updated configuration!",
-        package_name, used_version
-    );
+    match crate::add::add(package_name, version) {
+        Ok(ver) => println!(
+            "Successfully installed package {}@{} and updated configuration!",
+            package_name, ver
+        ),
+        Err(err) => {
+            println!("Error: {}", err);
+        }
+    };
 }
 
 fn remove_package(package_name: &str) {
