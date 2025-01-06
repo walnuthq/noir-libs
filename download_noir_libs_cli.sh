@@ -14,10 +14,10 @@ ARCH=$(uname -m)
 # Determine architecture
 case "$ARCH" in
 x86_64)
-  ARCH="x86_64-unknown-linux-gnu"
+  ARCH="aarch64-apple-darwin"
   ;;
 aarch64 | arm64)
-  ARCH="arm64"
+  ARCH="aarch64-apple-darwin"
   ;;
 *)
   echo "Unsupported architecture: $ARCH"
@@ -88,4 +88,5 @@ echo "Updating your $PREF_SHELL profile at $PROFILE..."
 
 echo
 echo "Installation complete!"
+echo "Installed noir-libs in $NOIR_LIBS_TOOL_BIN_FINAL_DIR"
 echo "Detected your shell as $PREF_SHELL. Run 'source $PROFILE' or start a new terminal session to use $TOOL_NAME."
