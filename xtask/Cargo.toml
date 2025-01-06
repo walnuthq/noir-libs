@@ -1,0 +1,15 @@
+[package]
+name = "xtask"
+version = "1.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+clap.workspace = true
+semver.workspace = true
+serde_json.workspace = true
+time.workspace = true
+toml_edit.workspace = true
+walkdir.workspace = true
+xshell.workspace = true
+anyhow.workspace = true
