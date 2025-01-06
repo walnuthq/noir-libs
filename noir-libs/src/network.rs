@@ -15,12 +15,22 @@ use std::path::Path;
 ///
 /// This function will panic if the request fails, if the file cannot be created,
 /// or if writing to the file fails.
-pub fn download_remote(output_path: &Path, url: &str) {
-    //println!("Downloading package from url {}", url);
+pub fn download_remote(output_path: &Path, url: &str) -> Result<(), String> {
+    let mut response = get(url).map_err(|e| e.to_string())?;
+    //println!("RESPONSE {:?}", response);
 
-    let mut response = get(url).expect("Failed to send request");
-    let mut dest = File::create(output_path).expect("Failed to create file");
-    copy(&mut response, &mut dest).expect("Failed to write to file");
+    // Check if the response status is successful (200 OK)
+    if !response.status().is_success() {
+        return Err(format!(
+            "Failed to download file: Received status code {}",
+            response.status()
+        ));
+    }
+
+    let mut dest = File::create(output_path).map_err(|e| e.to_string())?;
+    copy(&mut response, &mut dest).map_err(|e| e.to_string())?;
+
+    Ok(())
 }
 
 /// Retrieves the latest version of a package from the specified URL.
@@ -83,7 +93,7 @@ mod tests {
         let temp_dir = tempdir().expect("Failed to create temp dir");
         let output_path = temp_dir.path().join("test_file");
         let url_str = format!("{}/hello", url);
-        download_remote(&output_path, &url_str);
+        download_remote(&output_path, &url_str).unwrap();
 
         assert!(output_path.is_file());
 
