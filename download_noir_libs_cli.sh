@@ -16,7 +16,7 @@ case "$ARCH" in
 x86_64)
   ARCH="x86_64-unknown-linux-gnu"
   ;;
-aarch64)
+aarch64 | arm64)
   ARCH="arm64"
   ;;
 *)
