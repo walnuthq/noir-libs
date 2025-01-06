@@ -25,11 +25,15 @@ pub fn write_package_dep(project_dir: PathBuf, package_name: &str, path: &str) -
     let content = std::fs::read_to_string(manifest.clone()).expect("Cannot read file");
     let mut doc = content.parse::<DocumentMut>().expect("Invalid TOML");
 
+    // Ensure the "dependencies" table exists
+    let dependencies = doc
+        .entry("dependencies")
+        .or_insert_with(|| toml_edit::Item::Table(toml_edit::Table::new()));
+
     let mut table = toml_edit::InlineTable::default();
     table.get_or_insert("path", path);
     // Assign to the dependencies table
-    doc["dependencies"][package_name] =
-        toml_edit::Item::Value(toml_edit::Value::InlineTable(table));
+    dependencies[package_name] = toml_edit::Item::Value(toml_edit::Value::InlineTable(table));
 
     std::fs::write(manifest.clone(), doc.to_string()).expect("Cannot write file");
 
@@ -142,7 +146,7 @@ mod tests {
         let project_dir = temp_dir.path().to_path_buf();
         let manifest_path = project_dir.join(MANIFEST_FILE_NAME);
 
-        // Create an initial empty TOML file
+        // Create an initial empty TOML file with only dependencies section
         fs::write(&manifest_path, "[dependencies]\n").unwrap();
 
         // Call the function to test
@@ -152,6 +156,30 @@ mod tests {
 
         // Verify that the manifest file was updated correctly
         let content = fs::read_to_string(result).unwrap();
+        assert!(content.contains("my_package"));
+        assert!(content.contains("path = \"../../my_package/0.1.0\""));
+
+        // Cleanup
+        temp_dir.close().unwrap();
+    }
+
+    #[test]
+    fn test_write_package_dep_missing_deps_section() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let project_dir = temp_dir.path().to_path_buf();
+        let manifest_path = project_dir.join(MANIFEST_FILE_NAME);
+
+        // Create an initial empty TOML file
+        fs::write(&manifest_path, "\n").unwrap();
+
+        // Call the function to test
+        let package_name = "my_package";
+        let path = "../../my_package/0.1.0";
+        let result = write_package_dep(project_dir.clone(), package_name, path);
+
+        // Verify that the manifest file was updated correctly
+        let content = fs::read_to_string(result).unwrap();
+        assert!(content.contains("[dependencies]"));
         assert!(content.contains("my_package"));
         assert!(content.contains("path = \"../../my_package/0.1.0\""));
 
