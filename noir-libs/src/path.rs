@@ -50,8 +50,8 @@ mod tests {
     #[test]
     fn test_get_cache_dir() {
         let package_name = env!("CARGO_PKG_NAME");
-        let company_name = "TestCompany";
-        let company_tld = "test";
+        let company_name = "walnut";
+        let company_tld = "dev";
 
         // Create a mock ProjectDirs instance
         let proj_dirs = ProjectDirs::from(company_tld, company_name, package_name).unwrap();
