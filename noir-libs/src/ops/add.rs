@@ -34,8 +34,8 @@ fn store_package(cache_root: PathBuf, project_dir: PathBuf, package_name: &str, 
         for (sub_dep_name, sub_dep_version) in sub_deps {
             //      println!("Found dep {} {}", sub_dep_name, &sub_dep_version);
             store_package(
-                project_dir.clone(),
                 cache_root.clone(),
+                project_dir.clone(),
                 &sub_dep_name,
                 &sub_dep_version,
             );
