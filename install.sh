@@ -14,7 +14,7 @@ ARCH=$(uname -m)
 # Determine architecture
 case "$ARCH" in
 x86_64)
-  ARCH="aarch64-apple-darwin"
+  ARCH="x86_64-unknown-linux-gnu"
   ;;
 aarch64 | arm64)
   ARCH="aarch64-apple-darwin"
