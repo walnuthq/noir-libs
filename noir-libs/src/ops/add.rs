@@ -8,7 +8,7 @@ use crate::{
     path::{get_cache_storage, get_package_dir, get_package_latest_url, get_package_url},
 };
 
-pub fn add(package_name: &str, version: &str) {
+pub fn add(package_name: &str, version: &str) -> String {
     let cache_root = prepare_cache_dir();
     let pwd = env::current_dir().expect("Unable to find current folder");
 
@@ -17,6 +17,8 @@ pub fn add(package_name: &str, version: &str) {
     store_package(cache_root.clone(), pwd.clone(), package_name, &used_version);
 
     add_dep_to_manifest(pwd, cache_root, package_name, &used_version);
+
+    used_version
 }
 
 fn store_package(cache_root: PathBuf, project_dir: PathBuf, package_name: &str, version: &str) {

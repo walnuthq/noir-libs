@@ -16,7 +16,7 @@ use std::path::Path;
 /// This function will panic if the request fails, if the file cannot be created,
 /// or if writing to the file fails.
 pub fn download_remote(output_path: &Path, url: &str) {
-    println!("Downloading package from url {}", url);
+    //println!("Downloading package from url {}", url);
 
     let mut response = get(url).expect("Failed to send request");
     let mut dest = File::create(output_path).expect("Failed to create file");
@@ -38,7 +38,7 @@ pub fn download_remote(output_path: &Path, url: &str) {
 /// This function will panic if the request fails, if the response cannot be read,
 /// or if the JSON cannot be parsed correctly.
 pub fn get_latest_version(url: String) -> String {
-    println!("Downloading latest package from url {}", url);
+    //println!("Downloading latest package from url {}", url);
 
     let response = get(&url)
         .expect("Failed to perform request")
