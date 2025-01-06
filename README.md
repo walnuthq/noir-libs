@@ -1,6 +1,22 @@
 # Noir package manager
 
-Noir-libs is a package manager to be used with Noir. It retrieves and manages packages.
+Noir-libs is a package manager to be used with [Noir](https://noir-lang.org/). It retrieves and manages packages.
+
+## Functionality
+
+The following functionality is supported:
+- Add a package, from the package repository, to a project.
+- Remove a package from a project.
+
+### Supported packages
+
+This tool does not support all packages yet. The following packages are supported:
+- `aztec`
+- `easy_private_state`
+- `value_note`
+- `protocol_types`
+
+The packages were originally chosen since they are needed by an example program provided by Aztec.
 
 ## Package locations
 
