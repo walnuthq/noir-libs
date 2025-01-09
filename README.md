@@ -1,7 +1,7 @@
-# Noir package manager
+# noir-libs - Noir package manager CLI
 
-Noir-libs is a package manager for [Noir](https://noir-lang.org/). Explore available packages at [noir-libs.org](https://noir-libs.org/).
-
+noir-libs is a CLI application for **[noir-libs.org](https://noir-libs.org/) package manager for [Noir](https://noir-lang.org/)**. Explore available packages at [noir-libs.org](https://noir-libs.org/).
+   
 ## CLI installation
 
 Install CLI: `curl -s https://raw.githubusercontent.com/walnuthq/noir-libs/main/install.sh | bash`
@@ -11,7 +11,7 @@ Usage: `noir-libs --help`
 ## Features
 
 The following features are supported:
-- Add a package, from the package repository, to a project: `noir-libs add <package_name>@<package-version>`. 
+- Add a package from the package repository to a project: `noir-libs add <package_name>@<package-version>`. 
   If no version is specified, the latest version will be fetched e.g. `noir-libs add aztec`
 - Remove a package from a project: `noir-libs remove <package_name>`
 
