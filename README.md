@@ -1,35 +1,35 @@
 # Noir package manager
 
-Noir-libs is a package manager to be used with [Noir](https://noir-lang.org/). It retrieves and manages packages.
+Noir-libs is a package manager for [Noir](https://noir-lang.org/). Explore available packages at [noir-libs.org](https://noir-libs.org/).
 
-## Installation
+## CLI installation
 
 Install CLI: `curl -s https://raw.githubusercontent.com/walnuthq/noir-libs/main/install.sh | bash`
 
-## Functionality
+Usage: `noir-libs --help`
 
-The following functionality is supported:
-- Add a package, from the package repository, to a project.
-- Remove a package from a project.
+## Features
+
+The following features are supported:
+- Add a package, from the package repository, to a project: `noir-libs add <package_name>@<package-version>`. 
+  If no version is specified, the latest version will be fetched e.g. `noir-libs add aztec`
+- Remove a package from a project: `noir-libs remove <package_name>`
 
 ### Supported packages
 
-This tool does not support all packages yet. The following packages are supported:
-- `aztec`
-- `easy_private_state`
-- `value_note`
-- `protocol_types`
-
-The packages were originally chosen since they are needed by an example program provided by Aztec.
+`noir-libs` is integrated with [noir-libs.org](https://noir-libs.org/). Explore available packages there. 
 
 ## Package locations
 
-The fetched packages are cached in a cache folder. Exact location depends on the used operating system:
-- Linux: /home/user/.cache/noir-libs/
-- macOS: /Users/user/Library/Application Support/com.walnut.noir-libs/
-- Windows: C:\Users\Alice\AppData\Local\walnut\noir-libs
+The fetched packages are stored in a cache folder. Exact location depends on the used operating system:
+- Linux: `/home/user/.cache/noir-libs/`
+- macOS: `/Users/user/Library/Application Support/com.walnut.noir-libs/`
+- Windows: `C:\Users\Alice\AppData\Local\walnut\noir-libs`
 
-## How to test
+## Building
+`noir-libs` can be built with a command `cargo build --release`.
+
+## Testing
 
 1. Get the example package `example.tar.gz` from `tests/test_files`, extract to some totally unrelated folder
 1. Make sure you have everything ready for [Aztec development](https://docs.aztec.network/guides/getting_started)
