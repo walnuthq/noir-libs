@@ -1,10 +1,10 @@
-# noir-libs - Noir package manager CLI
+# noir-libs: Noir Package Manager CLI
 
-noir-libs is a CLI application for **[noir-libs.org](https://noir-libs.org/) package manager for [Noir](https://noir-lang.org/)**. Explore available packages at [noir-libs.org](https://noir-libs.org/).
+`noir-libs` is a CLI application for the Noir Package Manager [noir-libs.org](https://noir-libs.org/).
    
-## CLI installation
+## Installation
 
-Install CLI: `curl -s https://raw.githubusercontent.com/walnuthq/noir-libs/main/install.sh | bash`
+Install the CLI: `curl -s https://raw.githubusercontent.com/walnuthq/noir-libs/main/install.sh | bash`
 
 Usage: `noir-libs --help`
 
@@ -17,26 +17,31 @@ The following features are supported:
 
 ### Supported packages
 
-`noir-libs` is integrated with [noir-libs.org](https://noir-libs.org/). Explore available packages there. 
+All supported packages are available at [noir-libs.org](https://noir-libs.org/).
 
 ## Package locations
 
-The fetched packages are stored in a cache folder. Exact location depends on the used operating system:
+Fetched packages are stored in a cache folder. The exact location depends on the operating system:
 - Linux: `/home/user/.cache/noir-libs/`
 - macOS: `/Users/user/Library/Application Support/com.walnut.noir-libs/`
 - Windows: `C:\Users\Alice\AppData\Local\walnut\noir-libs`
 
-## Building
-`noir-libs` can be built with a command `cargo build --release`.
+## Building from source
+Build `noir-libs` using the following command: `cargo build --release`.
 
 ## Testing
 
-1. Get the example package `example.tar.gz` from `tests/test_files`, extract to some totally unrelated folder
-1. Make sure you have everything ready for [Aztec development](https://docs.aztec.network/guides/getting_started)
-1. Try to compile the example with `aztec-nargo compile`. See that if fails miserably because of missing dependencies
-1. Install this tool by following the instructions above
-1. In your example folder, start adding the needed dependencies:
+1. Get the example package `example.tar.gz` from `tests/test_files` and extract it to an unrelated folder.
+1. Ensure you have everything set up for [Aztec development](https://docs.aztec.network/guides/getting_started).
+1. Try compiling the example with: `aztec-nargo compile`. It should fail due to missing dependencies.
+1. Install `noir-libs` by following the instructions in the Installation section above.
+1. In your example folder, add the necessary dependencies using the following commands:
     1. `noir-libs add easy_private_state`
     1. `noir-libs add aztec`
     1. `noir-libs add value_note`
 1. Compile again with `aztec-nargo compile`
+2. Check that everything worked this time.
+
+## Acknowledgments
+
+A lot of inspiration for noir-libs was taken from [scarb](https://github.com/software-mansion/scarb), built by [Software Mansion](https://swmansion.com/).
