@@ -1,5 +1,8 @@
 use clap::{CommandFactory, Parser, Subcommand};
-use noir_libs::ops::{add, remove};
+use colored::Colorize;
+use noir_libs::ops::add::add;
+use noir_libs::ops::package::package::package;
+use noir_libs::ops::remove;
 
 /// A CLI package manager for Noir | noir-libs.org
 #[derive(Parser)]
@@ -21,9 +24,16 @@ enum Commands {
         /// Names of the packages to remove
         package_names: Vec<String>,
     },
+
+    /// Packages a local package into distributable tarball.
+    Package {},
 }
 
 fn main() {
+    if let Err(e) = package() {
+        println!("{}", format!("Error: {}", e).red().bold());
+    }
+
     let cli = Cli::parse();
 
     match &cli.command {
@@ -59,11 +69,17 @@ fn main() {
                 remove_package(package_name);
             }
         }
+        Commands::Package {} => {
+            if let Err(e) = package() {
+                println!("{}", format!("Error: {}", e).red().bold());
+            }
+            std::process::exit(1);
+        }
     }
 }
 
 fn add_package(package_name: &str, version: &str) {
-    match crate::add::add(package_name, version) {
+    match add(package_name, version) {
         Ok(ver) => println!(
             "Successfully installed package {}@{} and updated configuration!",
             package_name, ver
@@ -75,6 +91,6 @@ fn add_package(package_name: &str, version: &str) {
 }
 
 fn remove_package(package_name: &str) {
-    crate::remove::remove(package_name);
+    remove::remove(package_name);
     println!("Successfully removed package {}", package_name);
 }
