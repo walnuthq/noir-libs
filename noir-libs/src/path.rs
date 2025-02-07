@@ -1,7 +1,7 @@
 use directories::ProjectDirs;
 use std::path::PathBuf;
 
-use crate::config::{COMPANY_NAME, COMPANY_TLD, REPOSITORY_URL};
+use crate::config::{COMPANY_NAME, COMPANY_TLD, REGISTRY_URL};
 
 /// Gets a cache directory, based on operation system
 /// Linux: /home/user/.cache/noir-libs/
@@ -33,13 +33,13 @@ pub fn get_package_dir(cache_root: PathBuf, package_name: &str, version: &str) -
 /// Retrieves the URL where to retrieve a package
 /// Example: http://localhost:3001/api/v1/packages/aztec/0.67.0/download
 pub fn get_package_url(package_name: &str, version: &str) -> String {
-    format!("{}/{}/{}/download", REPOSITORY_URL, package_name, version)
+    format!("{}/packages/{}/{}/download", REGISTRY_URL, package_name, version)
 }
 
 /// Retrieves the URL for finding the latest version for a package
 /// Example: http://localhost:3001/api/v1/packages/aztec/latest
 pub fn get_package_latest_url(package_name: &str) -> String {
-    format!("{}/{}/latest", REPOSITORY_URL, package_name)
+    format!("{}/packages/{}/latest", REGISTRY_URL, package_name)
 }
 
 #[cfg(test)]

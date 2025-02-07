@@ -2,11 +2,12 @@ use std::{env, path::PathBuf};
 
 use crate::{
     config::MANIFEST_FILE_NAME,
-    filesystem::{extract_package, prepare_cache_dir},
+    filesystem::{prepare_cache_dir},
     manifest::{get_dependencies, write_package_dep},
     network::{download_remote, get_latest_version},
     path::{get_cache_storage, get_package_dir, get_package_latest_url, get_package_url},
 };
+use crate::tar::extract_tar_gz;
 
 pub fn add(package_name: &str, version: &str) -> Result<String, String> {
     let cache_root = prepare_cache_dir();
@@ -84,7 +85,7 @@ fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> Resul
     let url = get_package_url(package_name, version);
 
     download_remote(&package_storage, &url)?;
-    extract_package(&package_storage, &cached_package_path)
+    extract_tar_gz(&package_storage, &cached_package_path)
         .map_err(|_| "Problem extracting package".to_string())?;
 
     Ok(cached_package_path)

@@ -1,8 +1,9 @@
 [package]
-name = "easy_private_state"
-authors = ["aztec-labs"]
+name = "my_cool_package"
+authors = ["wujek m"]
 compiler_version = ">=0.18.0"
-version = "0.0.1"
+version = "0.0.2"
+type = "lib"
 
 [dependencies]
 aztec = { path = "../aztec" }

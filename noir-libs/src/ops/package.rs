@@ -1,16 +1,21 @@
 use crate::filesystem::{copy_all, new_dir_replace_if_exists};
 use crate::manifest::{read_manifest, Manifest, PackageType};
 use anyhow::{bail, Result};
-use crate::ops::package::tar::create_tar_gz;
 use colored::Colorize;
 use indoc::{formatdoc, indoc};
 use crate::config::MANIFEST_FILE_NAME;
+use crate::tar::{create_tar_gz, extract_tar_gz};
 
-pub fn package() -> Result<()> {
+pub struct PackagedTarball {
+    pub tarball_path: String,
+    pub name: String,
+    pub version: String,
+}
+pub fn package() -> Result<(PackagedTarball)> {
     let current_dir = std::env::current_dir()?;
     let manifest: Manifest = read_manifest(&current_dir)?;
     verify_package_type_is_lib(&manifest)?;
-    verify_version(&manifest)?;
+    let version =verify_and_get_version(&manifest)?;
     let package_name = verify_and_get_package_name(&manifest)?;
 
     let temp_folder_name = format!("{}_temp", &package_name);
@@ -24,10 +29,16 @@ pub fn package() -> Result<()> {
         &[".env"],
     )?;
 
-    create_tar_gz(&temp_folder_path, &temp_folder_path.join("package.tar.gz"))?;
+    let tarball_path = &temp_folder_path.join(format!("{}_{}.tar.gz", &package_name, &version));
+    create_tar_gz(&temp_folder_path, &tarball_path)?;
+    extract_tar_gz(&tarball_path, &current_dir.join("target/package/extracted_bro"))?;
 
-    println!("{}", format!("Successfully packaged. Tarball path: {}", temp_folder_path.display()).green().bold());
-    Ok(())
+    println!("{}", format!("Successfully packaged. Tarball path: {}", &tarball_path.display()).green().bold());
+    Ok(PackagedTarball {
+        tarball_path: tarball_path.to_str().unwrap().to_string(),
+        name: package_name.clone(),
+        version: version.clone(),
+    })
 }
 
 fn verify_package_type_is_lib(manifest: &Manifest) -> Result<()> {
@@ -40,7 +51,7 @@ fn verify_package_type_is_lib(manifest: &Manifest) -> Result<()> {
                     "package type {} in {} file is incorrect. Assure package type is set to '{}'. Example:
 
                      [package]
-                     version = \"{}\"", &package_type, &MANIFEST_FILE_NAME, PackageType::Library, PackageType::Library }
+                     type = \"{}\"", &package_type, &MANIFEST_FILE_NAME, PackageType::Library, PackageType::Library }
                 );
             }
         }
@@ -49,17 +60,17 @@ fn verify_package_type_is_lib(manifest: &Manifest) -> Result<()> {
                 "package type in {} file is not set. Assure package type is set to '{}'. Example:
 
                  [package]
-                 version = \"{}\"", &MANIFEST_FILE_NAME, PackageType::Library, PackageType::Library }
+                 type = \"{}\"", &MANIFEST_FILE_NAME, PackageType::Library, PackageType::Library }
             );
         }
     }
 }
 
-fn verify_version(manifest: &Manifest) -> Result<()> {
+fn verify_and_get_version(manifest: &Manifest) -> Result<(String)> {
     match &manifest.package.version {
         Some(version) => {
             match semver::Version::parse(version) {
-                Ok(_) => Ok(()),
+                Ok(_) => Ok((version.to_string())),
                 Err(_) => {
                     bail!(formatdoc! {
                         "package version {} in {} file is incorrect. Assure correct semantic versioning value. Example:

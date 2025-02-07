@@ -4,3 +4,4 @@ pub mod manifest;
 pub mod network;
 pub mod ops;
 pub mod path;
+pub mod tar;

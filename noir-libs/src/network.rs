@@ -1,8 +1,11 @@
-use reqwest::blocking::get;
+use reqwest::blocking::{get};
 use serde_json::Value;
 use std::fs::File;
-use std::io::copy;
+use std::io::{copy, Read};
 use std::path::Path;
+use anyhow::{bail, Result};
+use crate::config::REGISTRY_URL;
+use crate::ops::package::PackagedTarball;
 
 /// Downloads a package from a remote URL and saves it to the specified output path.
 ///
@@ -71,6 +74,69 @@ pub fn get_latest_version(url: String) -> Result<String, String> {
         Err(message.to_string())
     }
 }
+
+/// Retrieves the latest version of a package from the specified URL.
+///
+/// # Arguments
+///
+/// * `url` - A string containing the URL to fetch the latest version from.
+///
+/// # Returns
+///
+/// This function returns a string representing the latest version of the package.
+///
+/// # Errors
+///
+/// This function will panic if the request fails, if the response cannot be read,
+/// or if the JSON cannot be parsed correctly.
+pub fn publish_package(packaged_tarball: &PackagedTarball) -> Result<()> {
+    let package_path = Path::new(&packaged_tarball.tarball_path);
+    let name = &packaged_tarball.name.as_str();
+    let version = &packaged_tarball.version.as_str();
+
+    // Check if the packed file exists
+    if !package_path.exists() {
+        bail!(format!("Packed file does not exist: {}", &package_path.to_path_buf().display()));
+    }
+
+    // Open the file synchronously
+    let mut file = std::fs::File::open(&package_path)?;
+
+    let mut buffer = Vec::new();
+    // Read the file into the buffer
+    file.read_to_end(&mut buffer)?;
+
+    let length = buffer.len();
+
+    let file_part = reqwest::blocking::multipart::Part::bytes(buffer)
+        .file_name(format!("{}_{}", &name, &version))
+        .mime_str("application/gzip")?;
+
+    let form = reqwest::blocking::multipart::Form::new().part("file", file_part);
+    println!("Buffer length: {}", length);
+
+    // Send the request synchronously
+    let client = reqwest::blocking::Client::new();
+    match client
+        .post(format!("{}/packages/{}/{}/upload", REGISTRY_URL, &name, &version))
+        .multipart(form)
+        .send() {
+        Ok(response) => {
+            // Optionally, check the response here
+            if response.status().is_success() {
+                println!("Successfully uploaded package: {}", &name);
+            } else {
+                println!("Failed to upload package: {}. Status: {}", &name, response.status())
+            }
+        }
+        Err(err) => {
+            println!("Failed to upload package: {}. Error: {}", &name, err);
+        }
+    }
+    Ok(())
+
+}
+
 
 #[cfg(test)]
 mod tests {
