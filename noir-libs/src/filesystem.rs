@@ -46,12 +46,35 @@ pub fn copy_all(
     let ignore_files_clone: Vec<String> = ignore_files.iter().map(|s| s.to_string()).collect();
     let ignore_folders_clone: Vec<String> = ignore_folders.iter().map(|s| s.to_string()).collect();
     for entry in WalkBuilder::new(src)
-        // ignore dest path
-        .filter_entry(move |e| !e.path().starts_with(&dest_clone))
-        // ignore files in a ignore_files list
-        .filter_entry(move |e| ignore_files_clone.iter().all(|ig| !e.path().ends_with(ig)))
-        // ignore folders in a ignore_folders list
-        .filter_entry(move |e| ignore_folders_clone.iter().all(|ig| !e.path().to_string_lossy().contains(&format!("/{}/", ig))))
+        // copy hidden files (starting with .)
+        .hidden(false)
+        .filter_entry(move |e| {
+            let path = e.path();
+
+            // always pass .gitignore
+            if path.file_name().map_or(false, |name| name == ".gitignore") {
+                return true;
+            }
+
+            // ignore dest folder
+            if path.starts_with(&dest_clone) {
+                return false;
+            }
+
+            // ignore files from ignore_files list
+            if ignore_files_clone.iter().any(|ig| path.ends_with(ig)) {
+                return false;
+            }
+
+            // ignore folders from ignore_folders
+            if let Some(folder_name) = path.file_name().and_then(|n| n.to_str()) {
+                if ignore_folders_clone.contains(&folder_name.to_string()) {
+                    return false;
+                }
+            }
+
+            true
+        })
         .build()
     {
         let entry = match entry {
@@ -62,7 +85,7 @@ pub fn copy_all(
             }
         };
 
-        println!("Processing file: {:?}", entry.path());
+        println !("Processing file: {:?}", entry.path());
 
         let path = entry.path();
 
@@ -84,10 +107,6 @@ mod tests {
     use super::*;
     use std::fs;
     use tempfile::tempdir;
-
-    const TEST_PACKAGE: &str = "tests/test_files/test_package-1.2.3";
-
-
 
     #[test]
     fn test_ensure_dir_creates() {

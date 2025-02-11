@@ -1,5 +1,6 @@
 use clap::{CommandFactory, Parser, Subcommand};
 use colored::Colorize;
+use noir_libs::config::PACKAGING_OUTPUT_FOLDER_PATH;
 use noir_libs::ops::add::add;
 use noir_libs::ops::package::package;
 use noir_libs::ops::publish::publish;
@@ -29,83 +30,68 @@ enum Commands {
     /// Packages a local package into distributable tarball.
     Package {},
 
-    /// Publishes a local package to the remote registry.
+    /// Package and publish local package tarball to the remote registry.
     Publish {}
 }
 
 fn main() {
-    // if let Err(e) = package() {
-    //     println!("{}", format!("Error: {}", e).red().bold());
-    // }
 
-            // match package() {
-            //     Ok(packaged_tarball) => println!("{}", format!("Successfully packaged. Tarball path: {}", packaged_tarball.tarball_path).green().bold()),
-            //     Err(e) => {
-            //         println!("{}", format!("Error: {}", e).red().bold());
-            //     }
-            // }
+    let cli = Cli::parse();
 
-    match publish() {
-                    Ok(result_message) => println!("{}", result_message.green().bold()),
-                    Err(e) => {
-                        println!("{}", format!("Error: {}", e).red().bold());
-                    }
+    match &cli.command {
+        Commands::Add { packages } => {
+            if packages.is_empty() {
+                Cli::command()
+                    .find_subcommand_mut("add")
+                    .unwrap()
+                    .print_help()
+                    .unwrap();
+                std::process::exit(1);
+            }
+            for package in packages {
+                let parts: Vec<&str> = package.split('@').collect();
+                let version = if parts.len() == 2 {
+                    parts[1]
+                } else {
+                    "latest" // Use "latest" if no version is specified
+                };
+                add_package(parts[0], version);
+            }
+        }
+        Commands::Remove { package_names } => {
+            if package_names.is_empty() {
+                Cli::command()
+                    .find_subcommand_mut("remove")
+                    .unwrap()
+                    .print_help()
+                    .unwrap();
+                std::process::exit(1);
+            }
+            for package_name in package_names {
+                remove_package(package_name);
+            }
+        }
+        Commands::Package {} => {
+            let manifest_folder = std::env::current_dir().unwrap();
+            let dst_folder = std::env::current_dir().unwrap().join(PACKAGING_OUTPUT_FOLDER_PATH);
+            match package(&manifest_folder, &dst_folder) {
+                Ok(packaged_tarball) => println!("{}", format!("Successfully packaged. Tarball path: {}", packaged_tarball.tarball_path).green().bold()),
+                Err(e) => {
+                    println!("{}", format!("Error: {}", e).red().bold());
                 }
-
-    // let cli = Cli::parse();
-
-    // match &cli.command {
-    //     Commands::Add { packages } => {
-    //         if packages.is_empty() {
-    //             Cli::command()
-    //                 .find_subcommand_mut("add")
-    //                 .unwrap()
-    //                 .print_help()
-    //                 .unwrap();
-    //             std::process::exit(1);
-    //         }
-    //         for package in packages {
-    //             let parts: Vec<&str> = package.split('@').collect();
-    //             let version = if parts.len() == 2 {
-    //                 parts[1]
-    //             } else {
-    //                 "latest" // Use "latest" if no version is specified
-    //             };
-    //             add_package(parts[0], version);
-    //         }
-    //     }
-    //     Commands::Remove { package_names } => {
-    //         if package_names.is_empty() {
-    //             Cli::command()
-    //                 .find_subcommand_mut("remove")
-    //                 .unwrap()
-    //                 .print_help()
-    //                 .unwrap();
-    //             std::process::exit(1);
-    //         }
-    //         for package_name in package_names {
-    //             remove_package(package_name);
-    //         }
-    //     }
-    //     Commands::Package {} => {
-    //         match package() {
-    //             Ok(packaged_tarball) => println!("{}", format!("Successfully packaged. Tarball path: {}", packaged_tarball.tarball_path).green().bold()),
-    //             Err(e) => {
-    //                 println!("{}", format!("Error: {}", e).red().bold());
-    //             }
-    //         }
-    //         std::process::exit(1);
-    //     }
-    //     Commands::Publish {} => {
-    //         match publish() {
-    //             Ok(result_message) => println!("{}", result_message.green().bold()),
-    //             Err(e) => {
-    //                 println!("{}", format!("Error: {}", e).red().bold());
-    //             }
-    //         }
-    //         std::process::exit(1);
-    //     }
-    // }
+            }
+            std::process::exit(1);
+        }
+        Commands::Publish {} => {
+            match publish() {
+                Ok(result_message) => println!("{}", result_message.green().bold()),
+                Err(e) => {
+                    println!("{}", format!("Error: {}", e).red().bold());
+                }
+            }
+            std::process::exit(1);
+        }
+    }
 }
 
 fn add_package(package_name: &str, version: &str) {

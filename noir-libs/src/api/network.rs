@@ -4,6 +4,9 @@ use std::fs::File;
 use std::io::{copy, Read};
 use std::path::Path;
 use anyhow::bail;
+use indoc::formatdoc;
+use serde::Deserialize;
+use crate::config::REGISTRY_HOME_URL;
 use crate::ops::package::PackagedTarball;
 
 /// Downloads a package from a remote URL and saves it to the specified output path.
@@ -35,6 +38,12 @@ pub fn download_package(output_path: &Path, url: &str) -> Result<(), String> {
     Ok(())
 }
 
+#[derive(Debug, Deserialize)]
+struct VersionDto {
+    version: String,
+    createdAt: String,
+    sizeKb: u64,
+}
 /// Retrieves the latest version of a package from the specified URL.
 ///
 /// # Arguments
@@ -56,12 +65,9 @@ pub fn get_latest_package_version(url: String) -> Result<String, String> {
 
     if response.status().is_success() {
         let aaa = &response.text().map_err(|e| e.to_string())?;
-        let json: Value = serde_json::from_str(aaa).map_err(|e| e.to_string())?;
+        let json: VersionDto = serde_json::from_str(aaa).map_err(|e| e.to_string())?;
 
-        Ok(json["version.version"]
-            .as_str()
-            .ok_or("Version field not found or is not a string")?
-            .to_string())
+        Ok(json.version)
     } else {
         let error_message = response.text().map_err(|e| e.to_string())?;
         let json_error: Value = serde_json::from_str(&error_message).unwrap_or_default();
@@ -88,7 +94,7 @@ pub fn get_latest_package_version(url: String) -> Result<String, String> {
 ///
 /// This function will panic if the request fails, if the response cannot be read,
 /// or if the JSON cannot be parsed correctly.
-pub fn publish_package(packaged_tarball: &PackagedTarball, url: String) -> anyhow::Result<(String)> {
+pub fn publish_package(packaged_tarball: &PackagedTarball, url: String) -> anyhow::Result<String> {
     let package_path = Path::new(&packaged_tarball.tarball_path);
     // Check if the packed file exists
     if !package_path.exists() {
@@ -115,7 +121,8 @@ pub fn publish_package(packaged_tarball: &PackagedTarball, url: String) -> anyho
         .send() {
         Ok(response) => {
             if response.status().is_success() {
-                Ok(format!("Successfully uploaded package: {}", &name))
+                Ok(formatdoc! { "Successfully published package: {} {} to noir-libs registry.
+                Explore your package at: {}/packages/{}/{}", &name, &version, &REGISTRY_HOME_URL, &name, &version})
             } else {
                 // TODO I will add here error codes handling for various errors (version exists, etc.)
                 bail!("Failed to upload package: {}. Status: {}", &name, response.status())
@@ -165,7 +172,7 @@ mod tests {
         let mock = server
             .mock("GET", "/latest")
             .with_status(200)
-            .with_body(r#"{"latest_version": "1.2.3"}"#)
+            .with_body(r#"{"version": "1.2.3", "sizeKb": 100, "createdAt": "2025-02-11T12:58:24Z"}"#)
             .create();
 
         let url = format!("{}/latest", url);
