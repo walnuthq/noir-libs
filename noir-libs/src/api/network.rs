@@ -80,20 +80,7 @@ pub fn get_latest_package_version(url: String) -> Result<String, String> {
     }
 }
 
-/// Retrieves the latest version of a package from the specified URL.
-///
-/// # Arguments
-///
-/// * `url` - A string containing the URL to fetch the latest version from.
-///
-/// # Returns
-///
-/// This function returns a string representing the latest version of the package.
-///
-/// # Errors
-///
-/// This function will panic if the request fails, if the response cannot be read,
-/// or if the JSON cannot be parsed correctly.
+/// todo docs
 pub fn publish_package(packaged_tarball: &PackagedTarball, url: String) -> anyhow::Result<String> {
     let package_path = Path::new(&packaged_tarball.tarball_path);
     // Check if the packed file exists
@@ -119,18 +106,18 @@ pub fn publish_package(packaged_tarball: &PackagedTarball, url: String) -> anyho
         .post(url)
         .multipart(form)
         .send() {
-        Ok(response) => {
-            if response.status().is_success() {
-                Ok(formatdoc! { "Successfully published package: {} {} to noir-libs registry.
-                Explore your package at: {}/packages/{}/{}", &name, &version, &REGISTRY_HOME_URL, &name, &version})
-            } else {
-                // TODO I will add here error codes handling for various errors (version exists, etc.)
-                bail!("Failed to upload package: {}. Status: {}", &name, response.status())
+            Ok(response) => {
+                if response.status().is_success() {
+                    Ok(formatdoc! { "Successfully published package: {} {} to noir-libs registry.
+                    Explore your package at: {}/packages/{}/{}", &name, &version, &REGISTRY_HOME_URL, &name, &version})
+                } else {
+                    // TODO I will add here error codes handling for various errors (version exists, etc.)
+                    bail!("Failed to upload package: {}. Status: {}", &name, response.status())
+                }
             }
-        }
-        Err(err) => {
-            bail!("Failed to upload package: {}. Error: {}", &name, err);
-        }
+            Err(err) => {
+                bail!("Failed to upload package: {}. Error: {}", &name, err);
+            }
     }
 }
 
