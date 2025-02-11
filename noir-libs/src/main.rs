@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use colored::Colorize;
 use noir_libs::ops::add::add;
 use noir_libs::ops::package::package;
@@ -28,16 +28,29 @@ enum Commands {
 
     /// Packages a local package into distributable tarball.
     Package {},
+
+    /// Publishes a local package to the remote registry.
+    Publish {}
 }
 
 fn main() {
     // if let Err(e) = package() {
     //     println!("{}", format!("Error: {}", e).red().bold());
     // }
-    if let Err(e) = publish() {
-        println!("{}", format!("Error: {}", e).red().bold());
-    }
 
+            // match package() {
+            //     Ok(packaged_tarball) => println!("{}", format!("Successfully packaged. Tarball path: {}", packaged_tarball.tarball_path).green().bold()),
+            //     Err(e) => {
+            //         println!("{}", format!("Error: {}", e).red().bold());
+            //     }
+            // }
+
+    match publish() {
+                    Ok(result_message) => println!("{}", result_message.green().bold()),
+                    Err(e) => {
+                        println!("{}", format!("Error: {}", e).red().bold());
+                    }
+                }
 
     // let cli = Cli::parse();
 
@@ -75,8 +88,20 @@ fn main() {
     //         }
     //     }
     //     Commands::Package {} => {
-    //         if let Err(e) = package() {
-    //             println!("{}", format!("Error: {}", e).red().bold());
+    //         match package() {
+    //             Ok(packaged_tarball) => println!("{}", format!("Successfully packaged. Tarball path: {}", packaged_tarball.tarball_path).green().bold()),
+    //             Err(e) => {
+    //                 println!("{}", format!("Error: {}", e).red().bold());
+    //             }
+    //         }
+    //         std::process::exit(1);
+    //     }
+    //     Commands::Publish {} => {
+    //         match publish() {
+    //             Ok(result_message) => println!("{}", result_message.green().bold()),
+    //             Err(e) => {
+    //                 println!("{}", format!("Error: {}", e).red().bold());
+    //             }
     //         }
     //         std::process::exit(1);
     //     }

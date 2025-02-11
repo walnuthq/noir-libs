@@ -30,6 +30,11 @@ pub struct Package {
     pub compiler_version: Option<String>,
     pub authors: Option<Vec<String>>,
     pub version: Option<String>,
+    pub description: Option<String>,
+    pub license: Option<String>,
+    pub keywords: Option<Vec<String>>,
+    pub documentation: Option<String>,
+    pub repository: Option<String>,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
@@ -48,26 +53,6 @@ impl fmt::Display for PackageType {
         }
     }
 }
-
-// impl PackageType {
-//     const LIB: &'static str = "lib";
-//     const CONTRACT: &'static str = "contract";
-//
-//     fn as_str(&self) -> &str {
-//         match self {
-//             PackageType::Library => Self::LIB,
-//             PackageType::Contract => Self::CONTRACT,
-//         }
-//     }
-//
-//     fn from_str(s: &str) -> Result<Self> {
-//         match s {
-//             Self::LIB => Ok(PackageType::Library),
-//             Self::CONTRACT => Ok(PackageType::Contract),
-//             _ => bail!(format!("Unknown package type provided: {}", s)),
-//         }
-//     }
-// }
 
 pub fn read_manifest(project_dir: &PathBuf) -> Result<Manifest> {
     let manifest = try_find_manifest(&project_dir).with_context(|| format!("Unable to find {} manifest file. Please verify you are in the correct directory.", &MANIFEST_FILE_NAME))?;

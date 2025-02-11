@@ -1,9 +1,11 @@
 [package]
 name = "my_cool_package"
-authors = ["wujek m"]
+authors = ["my@joinme.com"]
 compiler_version = ">=0.18.0"
-version = "0.0.2"
+version = "0.1.1"
 type = "lib"
+description = "This is a test package! Let's go!"
+keywords = ["utility", "tool"]
 
 [dependencies]
 aztec = { path = "../aztec" }

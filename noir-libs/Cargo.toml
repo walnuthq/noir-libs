@@ -32,3 +32,4 @@ toml.workspace = true
 colored.workspace = true
 ignore.workspace = true
 indoc.workspace = true
+regex.workspace = true

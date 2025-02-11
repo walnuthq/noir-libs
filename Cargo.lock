@@ -1188,6 +1188,7 @@ dependencies = [
  "mockito",
  "once_cell",
  "pathdiff",
+ "regex",
  "reqwest",
  "semver",
  "serde",

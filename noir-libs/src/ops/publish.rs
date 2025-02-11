@@ -1,9 +1,9 @@
 use anyhow::Result;
-use crate::network::publish_package;
+use crate::api::api::publish_package_api;
 use crate::ops::package::package;
 
-pub fn publish() -> Result<()> {
+pub fn publish() -> Result<(String)> {
     let tarball_path = package()?;
-    publish_package(&tarball_path)?;
-    Ok(())
+    let result_message = publish_package_api(&tarball_path)?;
+    Ok((result_message))
 }

@@ -1,13 +1,13 @@
 use std::{env, path::PathBuf};
 
+use crate::api::api::{download_package_api, get_latest_package_version_api};
+use crate::tar::extract_tar_gz;
 use crate::{
     config::MANIFEST_FILE_NAME,
-    filesystem::{prepare_cache_dir},
+    filesystem::prepare_cache_dir,
     manifest::{get_dependencies, write_package_dep},
-    network::{download_remote, get_latest_version},
-    path::{get_cache_storage, get_package_dir, get_package_latest_url, get_package_url},
+    path::{get_cache_storage, get_package_dir},
 };
-use crate::tar::extract_tar_gz;
 
 pub fn add(package_name: &str, version: &str) -> Result<String, String> {
     let cache_root = prepare_cache_dir();
@@ -82,9 +82,7 @@ fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> Resul
     let package_storage = get_cache_storage(cache_root.clone(), package_name, version);
     let cached_package_path = get_package_dir(cache_root, package_name, version);
 
-    let url = get_package_url(package_name, version);
-
-    download_remote(&package_storage, &url)?;
+    download_package_api(&package_storage, package_name, version)?;
     extract_tar_gz(&package_storage, &cached_package_path)
         .map_err(|_| "Problem extracting package".to_string())?;
 
@@ -107,8 +105,7 @@ fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> Resul
 /// Returns a `String` representing the version of the package.
 fn get_used_version(package_name: &str, version: &str) -> Result<String, String> {
     if version == "latest" {
-        let latest_version_url = get_package_latest_url(package_name);
-        get_latest_version(latest_version_url)
+        get_latest_package_version_api(package_name)
     } else {
         Ok(version.to_string())
     }

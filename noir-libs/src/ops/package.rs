@@ -1,16 +1,17 @@
+use crate::config::MANIFEST_FILE_NAME;
 use crate::filesystem::{copy_all, new_dir_replace_if_exists};
 use crate::manifest::{read_manifest, Manifest, PackageType};
-use anyhow::{bail, Result};
-use colored::Colorize;
-use indoc::{formatdoc, indoc};
-use crate::config::MANIFEST_FILE_NAME;
 use crate::tar::{create_tar_gz, extract_tar_gz};
+use anyhow::{bail, Result};
+use indoc::formatdoc;
+use regex::Regex;
 
 pub struct PackagedTarball {
     pub tarball_path: String,
     pub name: String,
     pub version: String,
 }
+
 pub fn package() -> Result<(PackagedTarball)> {
     let current_dir = std::env::current_dir()?;
     let manifest: Manifest = read_manifest(&current_dir)?;
@@ -33,7 +34,6 @@ pub fn package() -> Result<(PackagedTarball)> {
     create_tar_gz(&temp_folder_path, &tarball_path)?;
     extract_tar_gz(&tarball_path, &current_dir.join("target/package/extracted_bro"))?;
 
-    println!("{}", format!("Successfully packaged. Tarball path: {}", &tarball_path.display()).green().bold());
     Ok(PackagedTarball {
         tarball_path: tarball_path.to_str().unwrap().to_string(),
         name: package_name.clone(),
@@ -84,6 +84,7 @@ fn verify_and_get_version(manifest: &Manifest) -> Result<(String)> {
         None => {
             bail!(formatdoc! {
                 "package version in {} file is not set. Assure correct semantic versioning value. Example:
+
                  [package]
                  version = \"0.0.1\"", &MANIFEST_FILE_NAME }
             );
@@ -91,19 +92,34 @@ fn verify_and_get_version(manifest: &Manifest) -> Result<(String)> {
     }
 }
 
-
 fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
     match &manifest.package.name {
         Some(name) => {
-            // todo Add some validation for package name (no spaces, no special characters, etc.)
+            validate_name(name)?;
             Ok(name)
         }
         None => {
             bail!(formatdoc! {
                 "package name in {} file is not set. Assure correct semantic versioning value. Example:
+
                  [package]
                  name = \"my_example_package\"", &MANIFEST_FILE_NAME }
             );
         }
     }
+}
+
+fn validate_name(name: &str) -> Result<()> {
+    let is_name_correct = match Regex::new(r"^(?:[a-z0-9]+(?:[-_][a-z0-9]+)*)(?:\.[a-z0-9]+(?:[-_][a-z0-9]+)*)*$")
+        .map_err(|_| "Invalid regex pattern") {
+        Ok(regex) => regex.is_match(name),
+        Err(_) => false,
+    };
+
+    if !is_name_correct {
+        return bail!(formatdoc! {"package name {} in {} name is invalid. Assure it follows the naming convention.",
+            &name, &MANIFEST_FILE_NAME});
+    }
+
+    Ok(())
 }
