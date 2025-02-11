@@ -1,5 +1,10 @@
 use clap::{CommandFactory, Parser, Subcommand};
-use noir_libs::ops::{add, remove};
+use colored::Colorize;
+use noir_libs::config::PACKAGING_OUTPUT_FOLDER_PATH;
+use noir_libs::ops::add::add;
+use noir_libs::ops::package::package;
+use noir_libs::ops::publish::publish;
+use noir_libs::ops::remove;
 
 /// A CLI package manager for Noir | noir-libs.org
 #[derive(Parser)]
@@ -21,6 +26,12 @@ enum Commands {
         /// Names of the packages to remove
         package_names: Vec<String>,
     },
+
+    /// Packages a local package into distributable tarball.
+    Package {},
+
+    /// Package and publish local package tarball to the remote registry.
+    Publish {}
 }
 
 fn main() {
@@ -59,11 +70,31 @@ fn main() {
                 remove_package(package_name);
             }
         }
+        Commands::Package {} => {
+            let manifest_folder = std::env::current_dir().unwrap();
+            let dst_folder = std::env::current_dir().unwrap().join(PACKAGING_OUTPUT_FOLDER_PATH);
+            match package(&manifest_folder, &dst_folder) {
+                Ok(packaged_tarball) => println!("{}", format!("Successfully packaged. Tarball path: {}", packaged_tarball.tarball_path).green().bold()),
+                Err(e) => {
+                    println!("{}", format!("Error: {}", e).red().bold());
+                }
+            }
+            std::process::exit(1);
+        }
+        Commands::Publish {} => {
+            match publish() {
+                Ok(result_message) => println!("{}", result_message.green().bold()),
+                Err(e) => {
+                    println!("{}", format!("Error: {}", e).red().bold());
+                }
+            }
+            std::process::exit(1);
+        }
     }
 }
 
 fn add_package(package_name: &str, version: &str) {
-    match crate::add::add(package_name, version) {
+    match add(package_name, version) {
         Ok(ver) => println!(
             "Successfully installed package {}@{} and updated configuration!",
             package_name, ver
@@ -75,6 +106,6 @@ fn add_package(package_name: &str, version: &str) {
 }
 
 fn remove_package(package_name: &str) {
-    crate::remove::remove(package_name);
+    remove::remove(package_name);
     println!("Successfully removed package {}", package_name);
 }
