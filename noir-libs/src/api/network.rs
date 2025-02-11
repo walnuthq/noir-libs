@@ -66,7 +66,6 @@ pub fn get_latest_package_version(url: String) -> Result<String, String> {
     if response.status().is_success() {
         let aaa = &response.text().map_err(|e| e.to_string())?;
         let json: VersionDto = serde_json::from_str(aaa).map_err(|e| e.to_string())?;
-
         Ok(json.version)
     } else {
         let error_message = response.text().map_err(|e| e.to_string())?;

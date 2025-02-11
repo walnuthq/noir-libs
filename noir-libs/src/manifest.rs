@@ -1,25 +1,14 @@
+use anyhow::{Context, Result};
+use serde::Deserialize;
 use std::fmt;
 use std::path::{Path, PathBuf};
-use config::Map;
-use serde::Deserialize;
 use toml_edit::DocumentMut;
-use anyhow::{Context, Result};
 
 use crate::config::MANIFEST_FILE_NAME;
 
 #[derive(Debug, Deserialize)]
 pub struct Manifest {
-    pub dependencies: Map<String, Dependency>,
     pub package: Package,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Dependency {
-    pub path: String,
-    pub git: Option<String>,
-    pub branch: Option<String>,
-    pub tag: Option<String>,
-    pub rev: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

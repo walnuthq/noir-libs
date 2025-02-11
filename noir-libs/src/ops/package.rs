@@ -172,25 +172,23 @@ mod tests {
         let extract_tarball_folder = packaging_dst_folder.join("extracted");
         extract_tar_gz(&expected_tarball_path.as_path(), extract_tarball_folder.as_path()).unwrap();
 
-        let extract_tarball_package_folder = extract_tarball_folder.join("my_cool_package_0.1.1");
-
         // then
-        let expected_file_path = &extract_tarball_package_folder.join("file_to_be_packaged.txt");
-        let expected_file_path2 = &extract_tarball_package_folder.join("Nargo.toml");
-        let expected_file_path3 = &extract_tarball_package_folder.join(".gitignore");
-        let expected_file_path4 = &extract_tarball_package_folder.join("src/lib.rs");
+        let expected_file_path = &extract_tarball_folder.join("file_to_be_packaged.txt");
+        let expected_file_path2 = &extract_tarball_folder.join("Nargo.toml");
+        let expected_file_path3 = &extract_tarball_folder.join(".gitignore");
+        let expected_file_path4 = &extract_tarball_folder.join("src/lib.rs");
         assert!(expected_file_path.exists());
         assert!(expected_file_path2.exists());
         assert!(expected_file_path3.exists());
         assert!(expected_file_path4.exists());
 
         // assert in my_cool_package_0.1.1 are only 4 files
-        let extracted_tarball_files = fs::read_dir(extract_tarball_package_folder.as_path()).unwrap();
+        let extracted_tarball_files = fs::read_dir(extract_tarball_folder.as_path()).unwrap();
         let extracted_tarball_files_count = extracted_tarball_files.count();
         assert_eq!(4, extracted_tarball_files_count);
 
         // assert in src folder is only 1 file
-        let extract_tarball_package_src_folder = &extract_tarball_package_folder.join("src");
+        let extract_tarball_package_src_folder = &extract_tarball_folder.join("src");
         let extracted_tarball_package_src_files = fs::read_dir(extract_tarball_package_src_folder.as_path()).unwrap();
         let extracted_tarball_package_src_files_count = extracted_tarball_package_src_files.count();
         assert_eq!(1, extracted_tarball_package_src_files_count);

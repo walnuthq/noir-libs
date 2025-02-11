@@ -1,3 +1,4 @@
+use std::fs;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use std::fs::File;
@@ -16,7 +17,19 @@ pub fn create_tar_gz(src_folder: &Path, dst_path: &Path) -> io::Result<()> {
 
     let mut tar = Builder::new(encoder);
 
-    tar.append_dir_all(src_folder.file_name().unwrap(), src_folder)?;
+    // package all files inside src_folder
+    for entry in fs::read_dir(src_folder)? {
+        let entry = entry?;
+        let path = entry.path();
+        let relative_path = path.strip_prefix(src_folder).unwrap();
+
+        if path.is_dir() {
+            tar.append_dir_all(relative_path, &path)?;
+        } else {
+            let mut file = File::open(&path)?;
+            tar.append_file(relative_path, &mut file)?;
+        }
+    }
 
     let encoder = tar.into_inner()?;
     encoder.finish()?;
