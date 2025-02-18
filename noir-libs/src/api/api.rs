@@ -1,7 +1,7 @@
 use crate::api::network::{download_package, get_latest_package_version, publish_package};
 use crate::config::REGISTRY_URL;
-use crate::ops::package::PackagedTarball;
 use std::path::Path;
+use crate::ops::package::package::PackagedTarball;
 
 pub fn download_package_api(output_path: &Path, package_name: &str, version: &str) -> Result<(), String> {
     download_package(&output_path, get_package_url(package_name, version).as_str())

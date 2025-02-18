@@ -7,7 +7,8 @@ use anyhow::bail;
 use indoc::formatdoc;
 use serde::Deserialize;
 use crate::config::REGISTRY_HOME_URL;
-use crate::ops::package::PackagedTarball;
+use crate::ops::package::package::PackagedTarball;
+use crate::path::get_full_package_name;
 
 /// Downloads a package from a remote URL and saves it to the specified output path.
 ///
@@ -39,10 +40,8 @@ pub fn download_package(output_path: &Path, url: &str) -> Result<(), String> {
 }
 
 #[derive(Debug, Deserialize)]
-struct VersionDto {
+struct Version {
     version: String,
-    createdAt: String,
-    sizeKb: u64,
 }
 /// Retrieves the latest version of a package from the specified URL.
 ///
@@ -64,8 +63,8 @@ pub fn get_latest_package_version(url: String) -> Result<String, String> {
     let response = get(&url).map_err(|e| e.to_string())?;
 
     if response.status().is_success() {
-        let aaa = &response.text().map_err(|e| e.to_string())?;
-        let json: VersionDto = serde_json::from_str(aaa).map_err(|e| e.to_string())?;
+        let resp_text = &response.text().map_err(|e| e.to_string())?;
+        let json: Version = serde_json::from_str(resp_text).map_err(|e| e.to_string())?;
         Ok(json.version)
     } else {
         let error_message = response.text().map_err(|e| e.to_string())?;
@@ -95,7 +94,7 @@ pub fn publish_package(packaged_tarball: &PackagedTarball, url: String) -> anyho
     file.read_to_end(&mut buffer)?;
 
     let file_part = reqwest::blocking::multipart::Part::bytes(buffer)
-        .file_name(format!("{}_{}", &name, &version))
+        .file_name(get_full_package_name(name, version))
         .mime_str("application/gzip")?;
 
     let form = reqwest::blocking::multipart::Form::new().part("file", file_part);
@@ -158,7 +157,7 @@ mod tests {
         let mock = server
             .mock("GET", "/latest")
             .with_status(200)
-            .with_body(r#"{"version": "1.2.3", "sizeKb": 100, "createdAt": "2025-02-11T12:58:24Z"}"#)
+            .with_body(r#"{"version": "1.2.3"}"#)
             .create();
 
         let url = format!("{}/latest", url);

@@ -79,8 +79,9 @@ pub fn copy_all(
     {
         let entry = match entry {
             Ok(e) => e,
-            Err(err) => {
-                eprintln!("ERROR: {}", err);
+            Err(ref err) => {
+                // print information about error causing file
+                eprintln!("Error on reading a file {:?}: {}", entry.as_ref().map(|e| e.path()).unwrap_or_else(|_| Path::new("<unknown>")), err);
                 continue;
             }
         };

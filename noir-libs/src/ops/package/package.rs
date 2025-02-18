@@ -4,8 +4,8 @@ use crate::manifest::{read_manifest, Manifest, PackageType};
 use crate::tar::create_tar_gz;
 use anyhow::{bail, Result};
 use indoc::formatdoc;
-use regex::Regex;
 use std::path::PathBuf;
+use crate::ops::package::name_validator::validate_name;
 
 pub struct PackagedTarball {
     pub tarball_path: String,
@@ -111,26 +111,13 @@ fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
     }
 }
 
-fn validate_name(name: &str) -> Result<()> {
-    let is_name_correct = match Regex::new(r"^(?:[a-z0-9]+(?:[-_][a-z0-9]+)*)(?:\.[a-z0-9]+(?:[-_][a-z0-9]+)*)*$")
-        .map_err(|_| "Invalid regex pattern") {
-        Ok(regex) => regex.is_match(name),
-        Err(_) => false,
-    };
 
-    if !is_name_correct {
-        bail!(formatdoc! {"package name {} in {} name is invalid. Assure it follows the naming convention.",
-            &name, &MANIFEST_FILE_NAME})
-    }
-
-    Ok(())
-}
 
 #[cfg(test)]
 mod tests {
     use std::fs;
     use std::path::PathBuf;
-    use crate::ops::package::package;
+    use crate::ops::package::package::package;
     use crate::tar::extract_tar_gz;
 
     const TEST_MANIFEST_FOLDER_PATH: &str = "tests/test_files/test_noir_package";

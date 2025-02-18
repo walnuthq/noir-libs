@@ -2,7 +2,7 @@ use clap::{CommandFactory, Parser, Subcommand};
 use colored::Colorize;
 use noir_libs::config::PACKAGING_OUTPUT_FOLDER_PATH;
 use noir_libs::ops::add::add;
-use noir_libs::ops::package::package;
+use noir_libs::ops::package::package::package;
 use noir_libs::ops::publish::publish;
 use noir_libs::ops::remove;
 

@@ -1,6 +1,6 @@
 use crate::api::api::publish_package_api;
 use crate::config::PACKAGING_OUTPUT_FOLDER_PATH;
-use crate::ops::package::package;
+use crate::ops::package::package::package;
 use anyhow::Result;
 
 pub fn publish() -> Result<String> {
