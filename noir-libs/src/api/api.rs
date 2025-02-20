@@ -11,8 +11,8 @@ pub fn get_latest_package_version_api(package_name: &str) -> Result<String, Stri
     get_latest_package_version(get_latest_package_version_url(package_name))
 }
 
-pub fn publish_package_api(tarball_path: &PackagedTarball) -> anyhow::Result<String> {
-    publish_package(tarball_path, get_publish_package_url(tarball_path.name.as_str(), tarball_path.version.as_str()))
+pub fn publish_package_api(tarball_path: &PackagedTarball, api_key: String) -> anyhow::Result<String> {
+    publish_package(tarball_path, get_publish_package_url(tarball_path.name.as_str(), tarball_path.version.as_str()), api_key)
 }
 
 /// Retrieves the URL where to retrieve a package

@@ -79,7 +79,7 @@ pub fn get_latest_package_version(url: String) -> Result<String, String> {
 }
 
 /// todo docs
-pub fn publish_package(packaged_tarball: &PackagedTarball, url: String) -> anyhow::Result<String> {
+pub fn publish_package(packaged_tarball: &PackagedTarball, url: String, api_key: String) -> anyhow::Result<String> {
     let package_path = Path::new(&packaged_tarball.tarball_path);
     // Check if the packed file exists
     if !package_path.exists() {
@@ -103,14 +103,23 @@ pub fn publish_package(packaged_tarball: &PackagedTarball, url: String) -> anyho
     match client
         .post(url)
         .multipart(form)
+        .header("Authorization", format!("Bearer {}", api_key))
         .send() {
             Ok(response) => {
                 if response.status().is_success() {
                     Ok(formatdoc! { "Successfully published package: {} {} to noir-libs registry.
                     Explore your package at: {}/packages/{}/{}", &name, &version, &REGISTRY_HOME_URL, &name, &version})
+                } else if response.status().is_client_error() {
+                    let err_message = match response.json::<Value>() {
+                        Ok(json) => json.get("message")
+                            .and_then(|m| m.as_str())
+                            .map(|s| s.to_string())
+                            .unwrap_or_else(|| "Unknown error".to_string()),
+                        Err(_) => "Unknown error".to_string(),
+                    };
+                    bail!("Failed to upload package: {}. Error message: {}", &name, &err_message)
                 } else {
-                    // TODO I will add here error codes handling for various errors (version exists, etc.)
-                    bail!("Failed to upload package: {}. Status: {}", &name, response.status())
+                    bail!("Failed to upload package: {}. Server status: {}", &name, response.status())
                 }
             }
             Err(err) => {

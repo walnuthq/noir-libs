@@ -15,7 +15,6 @@ pub struct PackagedTarball {
 
 pub fn package(manifest_folder: &PathBuf, dst_folder: &PathBuf) -> Result<PackagedTarball> {
     let manifest: Manifest = read_manifest(&manifest_folder)?;
-
     verify_package_type_is_lib(&manifest)?;
     let version = verify_and_get_version(&manifest)?;
     let package_name = verify_and_get_package_name(&manifest)?;
@@ -97,6 +96,7 @@ fn verify_and_get_version(manifest: &Manifest) -> Result<String> {
 fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
     match &manifest.package.name {
         Some(name) => {
+            println!("hehehe mam anzwe: {:?}", name);
             validate_name(name)?;
             Ok(name)
         }

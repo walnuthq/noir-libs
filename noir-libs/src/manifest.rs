@@ -44,7 +44,7 @@ impl fmt::Display for PackageType {
 }
 
 pub fn read_manifest(project_dir: &PathBuf) -> Result<Manifest> {
-    let manifest = try_find_manifest(&project_dir).with_context(|| format!("Unable to find {} manifest file. Please verify you are in the correct directory.", &MANIFEST_FILE_NAME))?;
+    let manifest = get_manifest(&project_dir).with_context(|| format!("Unable to find {} manifest file. Please verify you are in the correct directory.", &MANIFEST_FILE_NAME))?;
     let content = std::fs::read_to_string(manifest.clone()).with_context(|| format!("Cannot read {} manifest file. File {} was found but cannot be read.", &MANIFEST_FILE_NAME, manifest.to_str().unwrap()))?;
     let doc: toml::Value  = toml::from_str(&content).with_context(|| format!("{} manifest file is invalid TOML.", manifest.to_str().unwrap()))?;
     let manifest: Manifest = doc.try_into().with_context(|| format!("Failed to parse {} manifest file. Assure file has all required properties.", &MANIFEST_FILE_NAME))?;
@@ -142,6 +142,24 @@ fn try_find_manifest(start_dir: &Path) -> Option<PathBuf> {
         root = path.parent();
     }
     None
+}
+
+/// Reads TOML manifest file in the given directory.
+///
+/// # Arguments
+///
+/// * `dir` - The dir where to read.
+///
+/// # Returns
+///
+/// An `Option<PathBuf>` that contains the path to the manifest file if found, or `None` if not found.
+fn get_manifest(dir: &Path) -> Option<PathBuf> {
+    let manifest = dir.join(MANIFEST_FILE_NAME);
+    if manifest.is_file() {
+        Some(manifest)
+    } else {
+        None
+    }
 }
 
 fn extract_version_from_path(path: &str) -> Option<String> {
