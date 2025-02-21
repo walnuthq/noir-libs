@@ -5,7 +5,7 @@ use crate::tar::create_tar_gz;
 use anyhow::{bail, Result};
 use indoc::formatdoc;
 use std::path::PathBuf;
-use crate::ops::package::name_validator::validate_name;
+use crate::ops::package::name_validator::validate_name_is_not_empty;
 
 pub struct PackagedTarball {
     pub tarball_path: String,
@@ -96,8 +96,7 @@ fn verify_and_get_version(manifest: &Manifest) -> Result<String> {
 fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
     match &manifest.package.name {
         Some(name) => {
-            println!("hehehe mam anzwe: {:?}", name);
-            validate_name(name)?;
+            validate_name_is_not_empty(name)?;
             Ok(name)
         }
         None => {

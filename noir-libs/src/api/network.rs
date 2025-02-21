@@ -79,7 +79,7 @@ pub fn get_latest_package_version(url: String) -> Result<String, String> {
 }
 
 /// todo docs
-pub fn publish_package(packaged_tarball: &PackagedTarball, url: String, api_key: String) -> anyhow::Result<String> {
+pub fn publish_package(packaged_tarball: &PackagedTarball, api_key: String, url: String) -> anyhow::Result<String> {
     let package_path = Path::new(&packaged_tarball.tarball_path);
     // Check if the packed file exists
     if !package_path.exists() {
@@ -103,29 +103,59 @@ pub fn publish_package(packaged_tarball: &PackagedTarball, url: String, api_key:
     match client
         .post(url)
         .multipart(form)
-        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Authorization", get_auth_header(&api_key))
         .send() {
             Ok(response) => {
                 if response.status().is_success() {
                     Ok(formatdoc! { "Successfully published package: {} {} to noir-libs registry.
                     Explore your package at: {}/packages/{}/{}", &name, &version, &REGISTRY_HOME_URL, &name, &version})
                 } else if response.status().is_client_error() {
-                    let err_message = match response.json::<Value>() {
-                        Ok(json) => json.get("message")
-                            .and_then(|m| m.as_str())
-                            .map(|s| s.to_string())
-                            .unwrap_or_else(|| "Unknown error".to_string()),
-                        Err(_) => "Unknown error".to_string(),
-                    };
-                    bail!("Failed to upload package: {}. Error message: {}", &name, &err_message)
+                    let err_message = get_error_message_from_response(response);
+                    bail!("Failed to upload package: {} {}. Error message: {}", &name, &version, &err_message)
                 } else {
-                    bail!("Failed to upload package: {}. Server status: {}", &name, response.status())
+                    bail!("Failed to upload package: {} {}. Server status: {}", &name, &version, response.status())
                 }
             }
             Err(err) => {
-                bail!("Failed to upload package: {}. Error: {}", &name, err);
+                bail!("Failed to upload package: {} {}. Error: {}", &name, &version, err);
             }
     }
+}
+
+fn get_auth_header(api_key_string: &str) -> String {
+    format!("Bearer {}", api_key_string)
+}
+
+fn get_error_message_from_response(response: reqwest::blocking::Response) -> String {
+    match response.json::<Value>() {
+        Ok(json) => json.get("message")
+            .and_then(|m| m.as_str())
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "Unknown error".to_string()),
+        Err(_) => "Unknown error".to_string(),
+    }
+}
+
+pub fn yank_package(name: &str, version: &str, api_key: String, url: String) -> anyhow::Result<String> {
+    let client = reqwest::blocking::Client::new();
+    match client
+        .put(&url)
+        .header("Authorization", get_auth_header(&api_key))
+        .send() {
+            Ok(response) => {
+                if response.status().is_success() {
+                    Ok(formatdoc! { "Successfully yanked {} {} package version.", &name, &version })
+                } else if response.status().is_client_error() {
+                    let err_message = get_error_message_from_response(response);
+                    bail!("Failed to yank a package: {} {}. Error message: {}", &name, &version, &err_message)
+                } else {
+                    bail!("Failed to yank a package: {} {}. Server status: {}", &name, &version, response.status())
+                }
+            }
+            Err(err) => {
+                bail!("Failed to yank a package: {} {}. Error: {}", &name, &version,  err);
+            }
+        }
 }
 
 #[cfg(test)]
