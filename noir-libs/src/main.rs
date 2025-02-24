@@ -1,12 +1,14 @@
 use anyhow::bail;
-use clap::{CommandFactory, Parser, Subcommand};
+use clap::{Args, CommandFactory, Parser, Subcommand};
 use colored::Colorize;
+use indoc::formatdoc;
 use noir_libs::config::PACKAGING_OUTPUT_FOLDER_PATH;
 use noir_libs::ops::add::add;
 use noir_libs::ops::package::package::package;
 use noir_libs::ops::publish::publish;
 use noir_libs::ops::remove;
 use noir_libs::ops::yank::yank;
+use std::io;
 
 /// A CLI package manager for Noir | noir-libs.org
 #[derive(Parser)]
@@ -15,6 +17,7 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
 }
+
 
 #[derive(Subcommand)]
 enum Commands {
@@ -30,7 +33,11 @@ enum Commands {
     },
 
     /// Packages a local package into distributable tarball.
-    Package {},
+    Package {
+        /// Skip "build successful" confirmation prompt before publishing
+        #[arg(short = 'f', long = "force")]
+        force: bool,
+    },
 
     /// Package and publish local package tarball to the remote registry.
     Publish {},
@@ -73,20 +80,35 @@ fn main() {
                 remove_package(package_name);
             }
         }
-        Commands::Package {} => {
-            let manifest_folder = std::env::current_dir().unwrap();
-            let dst_folder = std::env::current_dir().unwrap().join(PACKAGING_OUTPUT_FOLDER_PATH);
-            match package(&manifest_folder, &dst_folder) {
-                Ok(packaged_tarball) => println!("{}", format!("Successfully packaged. Tarball path: {}", packaged_tarball.tarball_path).green().bold()),
+        Commands::Publish {} => {
+            match publish() {
+                Ok(result_message) => println!("{}", result_message.green().bold()),
                 Err(e) => {
                     println!("{}", format!("Error: {}", e).red().bold());
                 }
             }
             std::process::exit(1);
         }
-        Commands::Publish {} => {
-            match publish() {
-                Ok(result_message) => println!("{}", result_message.green().bold()),
+        Commands::Package {force} => {
+            if !force {
+                let info = formatdoc! {
+                    "This command packages your project to a tarball which later can be published to a remote registry.
+                     noir-libs is not building a project on your behalf.
+                     Please assure your project builds successfully (with \"nargo build\") before you package your project.
+
+                     Does your project builds successfully (confirm with \"y\")?"};
+                println!("{}", info.yellow().bold());
+                let mut input = String::new();
+                io::stdin().read_line(&mut input).unwrap();
+                if input.trim() != "y" {
+                    println!("{}", "Operation cancelled.".yellow().bold());
+                    return;
+                }
+            }
+            let manifest_folder = std::env::current_dir().unwrap();
+            let dst_folder = std::env::current_dir().unwrap().join(PACKAGING_OUTPUT_FOLDER_PATH);
+            match package(&manifest_folder, &dst_folder) {
+                Ok(packaged_tarball) => println!("{}", format!("Successfully packaged. Tarball path: {}", packaged_tarball.tarball_path).green().bold()),
                 Err(e) => {
                     println!("{}", format!("Error: {}", e).red().bold());
                 }
@@ -110,19 +132,17 @@ fn main() {
 
 fn add_package(package_name: &str, version: &str) {
     match add(package_name, version) {
-        Ok(ver) => println!(
-            "Successfully installed package {}@{} and updated configuration!",
-            package_name, ver
-        ),
-        Err(err) => {
-            println!("Error: {}", err);
+        Ok(ver) =>
+            println!("{}", format!("Successfully installed package {}@{} and updated configuration!",  package_name, ver).green().bold()),
+        Err(e) => {
+            println!("{}", format!("Error: {}", e).red().bold())
         }
     };
 }
 
 fn remove_package(package_name: &str) {
     remove::remove(package_name);
-    println!("Successfully removed package {}", package_name);
+    println!("{}", format!("Successfully removed package {}",  package_name).green().bold());
 }
 
 fn split_package_to_name_and_version(package: &String) -> (&str, &str) {

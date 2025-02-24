@@ -1,8 +1,0 @@
-[package]
-name = "my_cool_package"
-authors = ["my@joinme.com"]
-compiler_version = ">=0.18.0"
-version = "2.0.11"
-type = "lib"
-description = "This is a test package! Let's go! Changed!"
-keywords = ["utility", "tool"]

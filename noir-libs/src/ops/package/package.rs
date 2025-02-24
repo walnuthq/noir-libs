@@ -67,7 +67,7 @@ fn verify_package_type_is_lib(manifest: &Manifest) -> Result<()> {
     }
 }
 
-fn verify_and_get_version(manifest: &Manifest) -> Result<String> {
+pub fn verify_and_get_version(manifest: &Manifest) -> Result<String> {
     match &manifest.package.version {
         Some(version) => {
             match semver::Version::parse(version) {
@@ -93,7 +93,7 @@ fn verify_and_get_version(manifest: &Manifest) -> Result<String> {
     }
 }
 
-fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
+pub fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
     match &manifest.package.name {
         Some(name) => {
             validate_name_is_not_empty(name)?;
