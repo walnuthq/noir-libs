@@ -1,7 +1,7 @@
 use directories::ProjectDirs;
 use std::path::PathBuf;
 
-use crate::config::{COMPANY_NAME, COMPANY_TLD, REGISTRY_URL};
+use crate::config::{COMPANY_NAME, COMPANY_TLD};
 
 /// Gets a cache directory, based on operation system
 /// Linux: /home/user/.cache/noir-libs/
@@ -56,5 +56,31 @@ mod tests {
         let result = get_cache_dir();
         assert!(result.is_some());
         assert_eq!(result.unwrap(), cache_dir);
+    }
+
+    #[test]
+    fn test_get_full_package_name() {
+        let result = get_full_package_name("aztec", "0.67.0");
+        assert_eq!(result, "aztec_0.67.0");
+    }
+
+    #[test]
+    fn test_get_package_filename() {
+        let result = get_package_filename("value_note", "0.67.0");
+        assert_eq!(result, "value_note_0.67.0.archive");
+    }
+
+    #[test]
+    fn test_get_cache_storage() {
+        let cache_root = PathBuf::from("/home/user/.cache/noir-libs");
+        let result = get_cache_storage(cache_root.clone(), "value_note", "0.67.0");
+        assert_eq!(result.to_str().unwrap(), "/home/user/.cache/noir-libs/value_note_0.67.0.archive");
+    }
+
+    #[test]
+    fn test_get_package_dir() {
+        let cache_root = PathBuf::from("/home/user/.cache/noir-libs");
+        let result = get_package_dir(cache_root.clone(), "value_note", "0.67.0");
+        assert_eq!(result.to_str().unwrap(), "/home/user/.cache/noir-libs/value_note/0.67.0");
     }
 }

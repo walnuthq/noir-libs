@@ -7,7 +7,7 @@ use indoc::formatdoc;
 pub fn publish() -> Result<String> {
     let api_key = match std::env::var(&API_KEY_ENV_VAR_NAME) {
         Ok(api_key) => api_key,
-        Err(e) => {
+        Err(_e) => {
             bail!(formatdoc! {
                 "Cannot publish a package. API KEY env variable not found.
 

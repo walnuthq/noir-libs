@@ -101,7 +101,7 @@ fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
         }
         None => {
             bail!(formatdoc! {
-                "package name in {} file is not set. Assure correct semantic versioning value. Example:
+                "package name in {} file is not set. Please provide valid package name. Example:
 
                  [package]
                  name = \"my_example_package\"", &MANIFEST_FILE_NAME }

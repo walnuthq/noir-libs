@@ -139,7 +139,7 @@ fn split_package_to_name_and_version_with_validation(package: &String) -> anyhow
     let parts: Vec<&str> = package.split('@').collect();
     let version = if parts.len() == 2 {
         let version = parts[1];
-        if let Err(e) = semver::Version::parse(version) {
+        if let Err(_e) = semver::Version::parse(version) {
             bail!("Package version {} is incorrect. Assure correct semantic versioning value.", version);
         }
         version

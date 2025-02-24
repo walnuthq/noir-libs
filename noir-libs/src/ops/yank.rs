@@ -6,7 +6,7 @@ use crate::config::{API_KEY_ENV_VAR_NAME, REGISTRY_HOME_URL};
 pub fn yank(package_name: &str, version: &str) -> anyhow::Result<String> {
     let api_key = match std::env::var(&API_KEY_ENV_VAR_NAME) {
         Ok(api_key) => api_key,
-        Err(e) => {
+        Err(_e) => {
             bail!(formatdoc! {
                 "Cannot yank a package. API KEY env variable not found.
 
