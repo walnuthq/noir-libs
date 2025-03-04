@@ -84,7 +84,7 @@ pub fn get_latest_package_version(url: String) -> Result<String, String> {
 ///
 /// * `packaged_tarball` - a GZIP compressed tarball of the package to be published.
 /// * `api_key` - the API key to authenticate the user generated in the remote registry.
-/// * `api_key` - A string containing the URL to publish a package.
+/// * `url` - A string containing the URL to publish a package.
 ///
 /// # Returns
 ///
@@ -150,7 +150,7 @@ fn get_error_message_from_response(response: reqwest::blocking::Response) -> Str
     }
 }
 
-pub fn yank_package(name: &str, version: &str, api_key: String, url: String) -> anyhow::Result<String> {
+pub fn yank_package(name: &str, version: &str, api_key: String, url: String) -> anyhow::Result<()> {
     let client = reqwest::blocking::Client::new();
     match client
         .put(&url)
@@ -158,7 +158,7 @@ pub fn yank_package(name: &str, version: &str, api_key: String, url: String) -> 
         .send() {
             Ok(response) => {
                 if response.status().is_success() {
-                    Ok(formatdoc! { "Successfully yanked {} {} package version.", &name, &version })
+                    Ok(())
                 } else if response.status().is_client_error() {
                     let err_message = get_error_message_from_response(response);
                     bail!("Failed to yank a package: {} {}. Error message: {}", &name, &version, &err_message)

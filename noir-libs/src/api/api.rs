@@ -15,7 +15,7 @@ pub fn publish_package_api(tarball_path: &PackagedTarball, api_key: String) -> a
     publish_package(tarball_path, api_key, get_publish_package_url(tarball_path.name.as_str(), tarball_path.version.as_str()))
 }
 
-pub fn yank_package_api(package_name: &str, version: &str, api_key: String) -> anyhow::Result<String> {
+pub fn yank_package_api(package_name: &str, version: &str, api_key: String) -> anyhow::Result<()> {
     yank_package(package_name, version, api_key, get_yank_package_url(package_name, version))
 }
 

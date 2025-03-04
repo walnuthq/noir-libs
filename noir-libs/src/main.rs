@@ -119,7 +119,10 @@ fn main() {
             match split_package_to_name_and_version_with_validation(package) {
                 Ok((package_name, version)) => {
                     match yank(package_name, version) {
-                        Ok(result_message) => println!("{}", result_message.green().bold()),
+                        Ok(()) => {
+                            let result_message = formatdoc! { "Successfully yanked {} {} package version.", &package_name, &version };
+                            println!("{}", result_message.green().bold())
+                        },
                         Err(e) => { println!("{}", format!("Error: {}", e).red().bold()); }
                     }
                 },

@@ -4,7 +4,6 @@ use crate::manifest::{read_manifest, Manifest};
 use crate::ops::package::package::{verify_and_get_package_name, verify_and_get_version, PackagedTarball};
 use anyhow::{bail, Result};
 use indoc::formatdoc;
-use std::path::PathBuf;
 
 pub fn publish() -> Result<String> {
     let api_key = match std::env::var(&API_KEY_ENV_VAR_NAME) {
@@ -16,8 +15,8 @@ pub fn publish() -> Result<String> {
                  Please generate an API KEY with \"publish\" scope  key at {}.
 
                  If you already have an API KEY, please export it before running publish command:
-                 export API_KEY=<your api key>
-                 ", format!("{}/dashboard", &REGISTRY_HOME_URL) }
+                 export {}=<your api key>
+                 ", format!("{}/dashboard", &REGISTRY_HOME_URL), &API_KEY_ENV_VAR_NAME }
             );
         }
     };
