@@ -7,3 +7,5 @@ pub const REGISTRY_URL: &str = "http://localhost:3001/api/v1";
 pub const REGISTRY_HOME_URL: &str = "http://localhost:3000";
 // Packaged projects (packages) are generated in this folder e.g. target/package/my_cool_package_0.1.1
 pub const PACKAGING_OUTPUT_FOLDER_PATH: &str = "target/package";
+// The name of ENV variable that contains the API key - required for package publishing
+pub const API_KEY_ENV_VAR_NAME: &str = "NOIR_LIBS_API_KEY";

@@ -5,7 +5,7 @@ use crate::tar::create_tar_gz;
 use anyhow::{bail, Result};
 use indoc::formatdoc;
 use std::path::PathBuf;
-use crate::ops::package::name_validator::validate_name;
+use crate::ops::package::name_validator::validate_name_is_not_empty;
 
 pub struct PackagedTarball {
     pub tarball_path: String,
@@ -15,7 +15,6 @@ pub struct PackagedTarball {
 
 pub fn package(manifest_folder: &PathBuf, dst_folder: &PathBuf) -> Result<PackagedTarball> {
     let manifest: Manifest = read_manifest(&manifest_folder)?;
-
     verify_package_type_is_lib(&manifest)?;
     let version = verify_and_get_version(&manifest)?;
     let package_name = verify_and_get_package_name(&manifest)?;
@@ -68,7 +67,7 @@ fn verify_package_type_is_lib(manifest: &Manifest) -> Result<()> {
     }
 }
 
-fn verify_and_get_version(manifest: &Manifest) -> Result<String> {
+pub fn verify_and_get_version(manifest: &Manifest) -> Result<String> {
     match &manifest.package.version {
         Some(version) => {
             match semver::Version::parse(version) {
@@ -94,15 +93,15 @@ fn verify_and_get_version(manifest: &Manifest) -> Result<String> {
     }
 }
 
-fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
+pub fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
     match &manifest.package.name {
         Some(name) => {
-            validate_name(name)?;
+            validate_name_is_not_empty(name)?;
             Ok(name)
         }
         None => {
             bail!(formatdoc! {
-                "package name in {} file is not set. Assure correct semantic versioning value. Example:
+                "package name in {} file is not set. Please provide valid package name. Example:
 
                  [package]
                  name = \"my_example_package\"", &MANIFEST_FILE_NAME }
