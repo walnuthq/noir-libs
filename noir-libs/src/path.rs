@@ -72,15 +72,39 @@ mod tests {
 
     #[test]
     fn test_get_cache_storage() {
-        let cache_root = PathBuf::from("/home/user/.cache/noir-libs");
+        let cache_root = if cfg!(target_os = "windows") {
+            PathBuf::from("C:\\Users\\user\\AppData\\Local\\noir-libs")
+        } else {
+            PathBuf::from("/home/user/.cache/noir-libs")
+        };
+
         let result = get_cache_storage(cache_root.clone(), "value_note", "0.67.0");
-        assert_eq!(result.to_str().unwrap(), "/home/user/.cache/noir-libs/value_note_0.67.0.archive");
+
+        let expected_path = if cfg!(target_os = "windows") {
+            "C:\\Users\\user\\AppData\\Local\\noir-libs\\value_note_0.67.0.archive"
+        } else {
+            "/home/user/.cache/noir-libs/value_note_0.67.0.archive"
+        };
+
+        assert_eq!(result.to_str().unwrap(), expected_path);
     }
 
     #[test]
     fn test_get_package_dir() {
-        let cache_root = PathBuf::from("/home/user/.cache/noir-libs");
+        let cache_root = if cfg!(target_os = "windows") {
+            PathBuf::from("C:\\Users\\user\\AppData\\Local\\noir-libs")
+        } else {
+            PathBuf::from("/home/user/.cache/noir-libs")
+        };
+
         let result = get_package_dir(cache_root.clone(), "value_note", "0.67.0");
-        assert_eq!(result.to_str().unwrap(), "/home/user/.cache/noir-libs/value_note/0.67.0");
+
+        let expected_path = if cfg!(target_os = "windows") {
+            "C:\\Users\\user\\AppData\\Local\\noir-libs\\value_note\\0.67.0"
+        } else {
+            "/home/user/.cache/noir-libs/value_note/0.67.0"
+        };
+
+        assert_eq!(result.to_str().unwrap(), expected_path);
     }
 }

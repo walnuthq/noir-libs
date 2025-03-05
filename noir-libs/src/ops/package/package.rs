@@ -115,7 +115,7 @@ pub fn verify_and_get_package_name(manifest: &Manifest) -> Result<&String> {
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use std::path::PathBuf;
+    use std::path::{PathBuf, MAIN_SEPARATOR};
     use crate::ops::package::package::package;
     use crate::tar::extract_tar_gz;
 
@@ -150,7 +150,9 @@ mod tests {
         // then
         assert_eq!(packaged_tarball.name, "my_cool_package");
         assert_eq!(packaged_tarball.version, "0.1.1");
-        let expected_tarball_path = &packaging_dst_folder.join("my_cool_package_0.1.1/my_cool_package_0.1.1.tar.gz");
+        let expected_tarball_path = packaging_dst_folder
+            .join(format!("my_cool_package_0.1.1{}my_cool_package_0.1.1.tar.gz", MAIN_SEPARATOR));
+
         assert_eq!(packaged_tarball.tarball_path, expected_tarball_path.to_str().unwrap());
 
 
