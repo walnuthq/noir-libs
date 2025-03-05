@@ -1,8 +1,55 @@
+use anyhow::{Context, Result};
+use serde::Deserialize;
+use std::fmt;
 use std::path::{Path, PathBuf};
-
 use toml_edit::DocumentMut;
 
 use crate::config::MANIFEST_FILE_NAME;
+
+#[derive(Debug, Deserialize)]
+pub struct Manifest {
+    pub package: Package,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Package {
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    pub package_type: Option<PackageType>,
+    pub compiler_version: Option<String>,
+    pub authors: Option<Vec<String>>,
+    pub version: Option<String>,
+    pub description: Option<String>,
+    pub license: Option<String>,
+    pub keywords: Option<Vec<String>>,
+    pub documentation: Option<String>,
+    pub repository: Option<String>,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+pub enum PackageType {
+    #[serde(rename = "lib")]
+    Library,
+    #[serde(rename = "contract")]
+    Contract,
+}
+
+impl fmt::Display for PackageType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PackageType::Library => write!(f, "lib"),
+            PackageType::Contract => write!(f, "contract"),
+        }
+    }
+}
+
+pub fn read_manifest(project_dir: &PathBuf) -> Result<Manifest> {
+    let manifest = get_manifest(&project_dir).with_context(|| format!("Unable to find {} manifest file. Please verify you are in the correct directory.", &MANIFEST_FILE_NAME))?;
+    let content = std::fs::read_to_string(manifest.clone()).with_context(|| format!("Cannot read {} manifest file. File {} was found but cannot be read.", &MANIFEST_FILE_NAME, manifest.to_str().unwrap()))?;
+    let doc: toml::Value  = toml::from_str(&content).with_context(|| format!("{} manifest file is invalid TOML.", manifest.to_str().unwrap()))?;
+    let manifest: Manifest = doc.try_into().with_context(|| format!("Failed to parse {} manifest file. Assure file has all required properties.", &MANIFEST_FILE_NAME))?;
+    Ok(manifest)
+}
 
 /// Writes a package dependency to the specified TOML manifest file.
 ///
@@ -21,8 +68,8 @@ use crate::config::MANIFEST_FILE_NAME;
 /// This function will panic if the manifest file cannot be found, if the file cannot be read,
 /// or if the content is not valid TOML.
 pub fn write_package_dep(project_dir: PathBuf, package_name: &str, path: &str) -> PathBuf {
-    let manifest = try_find_manifest(&project_dir).expect("Unable to find manifest");
-    let content = std::fs::read_to_string(manifest.clone()).expect("Cannot read file");
+    let manifest = try_find_manifest(&project_dir).expect(format!("Unable to find {} manifest file", &MANIFEST_FILE_NAME).as_str());
+    let content = std::fs::read_to_string(manifest.clone()).expect(format!("Cannot read {} manifest file", &MANIFEST_FILE_NAME).as_str());
     let mut doc = content.parse::<DocumentMut>().expect("Invalid TOML");
 
     // Ensure the "dependencies" table exists
@@ -95,6 +142,24 @@ fn try_find_manifest(start_dir: &Path) -> Option<PathBuf> {
         root = path.parent();
     }
     None
+}
+
+/// Reads TOML manifest file in the given directory.
+///
+/// # Arguments
+///
+/// * `dir` - The dir where to read.
+///
+/// # Returns
+///
+/// An `Option<PathBuf>` that contains the path to the manifest file if found, or `None` if not found.
+fn get_manifest(dir: &Path) -> Option<PathBuf> {
+    let manifest = dir.join(MANIFEST_FILE_NAME);
+    if manifest.is_file() {
+        Some(manifest)
+    } else {
+        None
+    }
 }
 
 fn extract_version_from_path(path: &str) -> Option<String> {

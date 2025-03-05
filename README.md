@@ -11,9 +11,11 @@ Usage: `noir-libs --help`
 ## Features
 
 The following features are supported:
-- Add a package from the package repository to a project: `noir-libs add <package_name>@<package-version>`. 
+- **add** a package from the package repository to a project: `noir-libs add <package_name>@<package-version>`. 
   If no version is specified, the latest version will be fetched e.g. `noir-libs add aztec`
-- Remove a package from a project: `noir-libs remove <package_name>`
+- **remove** a package from a project: `noir-libs remove <package_name>`
+- **package** a Nargo project to a distributable tarball. Inside Noir project: `noir-libs package`
+- **publish** a Nargo package to public remote package registry. Inside Noir project: `noir-libs publish`
 
 ### Supported packages
 

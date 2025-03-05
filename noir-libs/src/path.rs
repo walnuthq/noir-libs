@@ -1,7 +1,7 @@
 use directories::ProjectDirs;
 use std::path::PathBuf;
 
-use crate::config::{COMPANY_NAME, COMPANY_TLD, REPOSITORY_URL};
+use crate::config::{COMPANY_NAME, COMPANY_TLD};
 
 /// Gets a cache directory, based on operation system
 /// Linux: /home/user/.cache/noir-libs/
@@ -12,10 +12,17 @@ pub fn get_cache_dir() -> Option<PathBuf> {
         .map(|proj_dirs| proj_dirs.cache_dir().to_path_buf())
 }
 
+/// Creates a full package name from package name and version
+/// Example: aztec-0.67.0
+pub fn get_full_package_name(package_name: &str, version: &str) -> String {
+    format!("{}_{}", package_name, version)
+}
+
 /// Retrieves the filename of the package
 /// Example: value_note-0.67.0.archive
 pub fn get_package_filename(package_name: &str, version: &str) -> String {
-    format!("{}-{}.archive", package_name, version)
+    let full_package_name = get_full_package_name(package_name, version);
+    format!("{}.archive", full_package_name)
 }
 
 /// Retrieves the filename of the package in cache
@@ -28,18 +35,6 @@ pub fn get_cache_storage(cache_root: PathBuf, package_name: &str, version: &str)
 /// Example: /home/user/.cache/noir-libs/value_note/0.67.0
 pub fn get_package_dir(cache_root: PathBuf, package_name: &str, version: &str) -> PathBuf {
     cache_root.join(package_name).join(version)
-}
-
-/// Retrieves the URL where to retrieve a package
-/// Example: http://localhost:3001/api/v1/packages/aztec/0.67.0/download
-pub fn get_package_url(package_name: &str, version: &str) -> String {
-    format!("{}/{}/{}/download", REPOSITORY_URL, package_name, version)
-}
-
-/// Retrieves the URL for finding the latest version for a package
-/// Example: http://localhost:3001/api/v1/packages/aztec/latest
-pub fn get_package_latest_url(package_name: &str) -> String {
-    format!("{}/{}/latest", REPOSITORY_URL, package_name)
 }
 
 #[cfg(test)]
@@ -61,5 +56,31 @@ mod tests {
         let result = get_cache_dir();
         assert!(result.is_some());
         assert_eq!(result.unwrap(), cache_dir);
+    }
+
+    #[test]
+    fn test_get_full_package_name() {
+        let result = get_full_package_name("aztec", "0.67.0");
+        assert_eq!(result, "aztec_0.67.0");
+    }
+
+    #[test]
+    fn test_get_package_filename() {
+        let result = get_package_filename("value_note", "0.67.0");
+        assert_eq!(result, "value_note_0.67.0.archive");
+    }
+
+    #[test]
+    fn test_get_cache_storage() {
+        let cache_root = PathBuf::from("/home/user/.cache/noir-libs");
+        let result = get_cache_storage(cache_root.clone(), "value_note", "0.67.0");
+        assert_eq!(result.to_str().unwrap(), "/home/user/.cache/noir-libs/value_note_0.67.0.archive");
+    }
+
+    #[test]
+    fn test_get_package_dir() {
+        let cache_root = PathBuf::from("/home/user/.cache/noir-libs");
+        let result = get_package_dir(cache_root.clone(), "value_note", "0.67.0");
+        assert_eq!(result.to_str().unwrap(), "/home/user/.cache/noir-libs/value_note/0.67.0");
     }
 }

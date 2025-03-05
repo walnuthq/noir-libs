@@ -1,38 +1,16 @@
 use std::{
-    fs::{self, File},
+    fs::{self},
     io,
     path::{Path, PathBuf},
 };
 
-use flate2::read::GzDecoder;
-use tar::Archive;
-
 use crate::path::get_cache_dir;
+use ignore::WalkBuilder;
 
 pub fn prepare_cache_dir() -> PathBuf {
     let cache_dir = get_cache_dir().expect("Could not determine cache directory");
     ensure_dir(&cache_dir).expect("Failed to setup cache directory");
     cache_dir
-}
-
-/// Extracts a package from a tar.gz file.
-///
-/// # Parameters
-/// - `path_with_version`: The path to the tar.gz file containing the package.
-/// - `path_without_version`: The base path where the package should be extracted.
-/// - `version`: The version of the package being extracted.
-///
-/// # Returns
-/// Returns the path to the directory where the package was extracted, or an error if the extraction fails.
-pub fn extract_package(package_path: &Path, extract_dir: &Path) -> io::Result<()> {
-    // Open the tar.gz file
-    let tar_gz = File::open(package_path)?;
-    let gz = GzDecoder::new(tar_gz);
-    let mut archive = Archive::new(gz);
-
-    archive.unpack(extract_dir)?;
-
-    Ok(())
 }
 
 /// Ensures the cache directory exists
@@ -50,25 +28,86 @@ fn ensure_dir(path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+pub fn new_dir_replace_if_exists(path: &Path) -> std::io::Result<()> {
+    if path.exists() {
+        fs::remove_dir_all(path)?;
+    }
+    fs::create_dir_all(path)?;
+    Ok(())
+}
+
+pub fn copy_all(
+    src: &Path,
+    dest: &Path,
+    ignore_folders: &[&str],
+    ignore_files: &[&str],
+) -> io::Result<()> {
+    let dest_clone = dest.to_path_buf().clone();
+    let ignore_files_clone: Vec<String> = ignore_files.iter().map(|s| s.to_string()).collect();
+    let ignore_folders_clone: Vec<String> = ignore_folders.iter().map(|s| s.to_string()).collect();
+    for entry in WalkBuilder::new(src)
+        // copy hidden files (starting with .)
+        .hidden(false)
+        .filter_entry(move |e| {
+            let path = e.path();
+
+            // always pass .gitignore
+            if path.file_name().map_or(false, |name| name == ".gitignore") {
+                return true;
+            }
+
+            // ignore dest folder
+            if path.starts_with(&dest_clone) {
+                return false;
+            }
+
+            // ignore files from ignore_files list
+            if ignore_files_clone.iter().any(|ig| path.ends_with(ig)) {
+                return false;
+            }
+
+            // ignore folders from ignore_folders
+            if let Some(folder_name) = path.file_name().and_then(|n| n.to_str()) {
+                if ignore_folders_clone.contains(&folder_name.to_string()) {
+                    return false;
+                }
+            }
+
+            true
+        })
+        .build()
+    {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(ref err) => {
+                // print information about error causing file
+                eprintln!("Error on reading a file {:?}: {}", entry.as_ref().map(|e| e.path()).unwrap_or_else(|_| Path::new("<unknown>")), err);
+                continue;
+            }
+        };
+
+        println !("Processing file: {:?}", entry.path());
+
+        let path = entry.path();
+
+        let relative_path = path.strip_prefix(src).unwrap_or(path);
+        let dest_path = dest.join(relative_path);
+
+        if path.is_dir() {
+            fs::create_dir_all(&dest_path)?;
+        } else if path.is_file() {
+            fs::copy(&path, &dest_path)?;
+        }
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::config::MANIFEST_FILE_NAME;
-
     use super::*;
     use std::fs;
     use tempfile::tempdir;
-
-    const TEST_PACKAGE: &str = "tests/test_files/test_package-1.2.3";
-
-    #[test]
-    fn test_extract_package() {
-        let temp_dir = tempdir().unwrap();
-        let package_path = Path::new(TEST_PACKAGE);
-
-        let result = extract_package(package_path, temp_dir.path());
-        assert!(result.is_ok());
-        assert!(temp_dir.path().join(MANIFEST_FILE_NAME).exists()); // Extracted files should include manifest
-    }
 
     #[test]
     fn test_ensure_dir_creates() {
