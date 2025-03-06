@@ -1,5 +1,5 @@
 use std::{env, path::PathBuf};
-
+use std::path::Path;
 use crate::api::api::{download_package_api, get_latest_package_version_api};
 use crate::tar::extract_tar_gz;
 use crate::{
@@ -10,20 +10,23 @@ use crate::{
 };
 
 pub fn add(package_name: &str, version: &str) -> Result<String, String> {
-    let cache_root = prepare_cache_dir();
     let pwd = env::current_dir().expect("Unable to find current folder");
+    let manifest_path = crate::manifest::try_find_manifest(&pwd).expect(format!("Unable to find {} manifest file", &MANIFEST_FILE_NAME).as_str());
+    let manifest_dir = Path::new(&manifest_path)
+        .parent()
+        .expect("Failed to get manifest parent directory");
+    let cache_root = prepare_cache_dir(&manifest_dir.to_path_buf());
 
     let used_version = get_used_version(package_name, version)?;
 
-    store_package(cache_root.clone(), pwd.clone(), package_name, &used_version)?;
-    add_dep_to_manifest(pwd, cache_root, package_name, &used_version);
+    store_package(cache_root.clone(), package_name, &used_version)?;
+    add_dep_to_manifest(&manifest_path, manifest_dir.to_path_buf(), cache_root, package_name, &used_version);
 
     Ok(used_version)
 }
 
 fn store_package(
     cache_root: PathBuf,
-    project_dir: PathBuf,
     package_name: &str,
     version: &str,
 ) -> Result<(), String> {
@@ -40,7 +43,6 @@ fn store_package(
             //      println!("Found dep {} {}", sub_dep_name, &sub_dep_version);
             store_package(
                 cache_root.clone(),
-                project_dir.clone(),
                 &sub_dep_name,
                 &sub_dep_version,
             )?;
@@ -50,20 +52,23 @@ fn store_package(
 }
 
 fn add_dep_to_manifest(
-    project_dir: PathBuf,
+    manifest_path: &PathBuf,
+    manifest_dir: PathBuf,
     cache_root: PathBuf,
     package_name: &str,
     version: &str,
-) -> PathBuf {
-    // Construct the path to the cached dependency
+) {
     let cached_package_path = get_package_dir(cache_root, package_name, version);
-    // Write the dependency into the project's manifest
-    let manifest_path = write_package_dep(
-        project_dir,
+
+    let relative_path = cached_package_path.strip_prefix(manifest_dir)
+        .unwrap_or(&cached_package_path)
+        .to_path_buf();
+
+    write_package_dep(
+        manifest_path,
         package_name,
-        cached_package_path.to_str().unwrap(),
+        relative_path.to_str().unwrap(),
     );
-    manifest_path
 }
 
 /// Retrieves a package from the cache, downloading it if necessary,

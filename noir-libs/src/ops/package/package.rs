@@ -1,4 +1,4 @@
-use crate::config::MANIFEST_FILE_NAME;
+use crate::config::{DEPENDENCIES_FOLDER_NAME, MANIFEST_FILE_NAME};
 use crate::filesystem::{copy_all, new_dir_replace_if_exists};
 use crate::manifest::{read_manifest, Manifest, PackageType};
 use crate::tar::create_tar_gz;
@@ -28,7 +28,7 @@ pub fn package(manifest_folder: &PathBuf, dst_folder: &PathBuf) -> Result<Packag
     copy_all(
         &manifest_folder,
         &data_temp_folder_path,
-        &["target", ".cargo", ".vscode", &temp_folder_name],
+        &["target", ".cargo", ".vscode", &temp_folder_name, &DEPENDENCIES_FOLDER_NAME],
         &[".env"],
     )?;
 

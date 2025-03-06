@@ -4,12 +4,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::path::get_cache_dir;
 use ignore::WalkBuilder;
+use crate::config::DEPENDENCIES_FOLDER_NAME;
 
-pub fn prepare_cache_dir() -> PathBuf {
-    let cache_dir = get_cache_dir().expect("Could not determine cache directory");
-    ensure_dir(&cache_dir).expect("Failed to setup cache directory");
+pub fn prepare_cache_dir(manifest_dir: &PathBuf) -> PathBuf {
+    let cache_dir = manifest_dir.join(&DEPENDENCIES_FOLDER_NAME);
+    ensure_dir(&cache_dir).expect("Failed to setup dependencies cache directory");
     cache_dir
 }
 
