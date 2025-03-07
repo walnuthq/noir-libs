@@ -17,7 +17,6 @@ pub fn fetch() -> anyhow::Result<()> {
         match dependency {
             Dependency::Path { path } => {
                 let path = Path::new(path.as_str());
-                // Get the last two components of the path
                 let version = path.file_name().expect("Path is incorrect")
                     .to_str().expect("Path file name is not valid UTF-8");
                 let package_name = path.parent().expect("Path is incorrect").file_name().expect("Path is incorrect")

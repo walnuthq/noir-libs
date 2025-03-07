@@ -48,6 +48,8 @@ pub enum PackageType {
     Library,
     #[serde(rename = "contract")]
     Contract,
+    #[serde(rename = "bin")]
+    Binary,
 }
 
 impl fmt::Display for PackageType {
@@ -55,6 +57,7 @@ impl fmt::Display for PackageType {
         match self {
             PackageType::Library => write!(f, "lib"),
             PackageType::Contract => write!(f, "contract"),
+            PackageType::Binary => write!(f, "bin"),
         }
     }
 }
