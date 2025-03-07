@@ -19,7 +19,7 @@ pub fn add(package_name: &str, version: &str) -> Result<String, String> {
 
     let used_version = get_used_version(package_name, version)?;
 
-    store_package(cache_root.clone(), package_name, &used_version)?;
+    store_package(cache_root.clone(), package_name, &used_version, false)?;
     add_dep_to_manifest(&manifest_path, manifest_dir.to_path_buf(), cache_root, package_name, &used_version);
 
     Ok(used_version)
@@ -29,9 +29,10 @@ pub fn store_package(
     cache_root: PathBuf,
     package_name: &str,
     version: &str,
+    fetch_yanked: bool,
 ) -> Result<(), String> {
     // Get the package into the cache
-    let package_cache_path = get_to_cache(cache_root.clone(), package_name, version)?;
+    let package_cache_path = get_to_cache(cache_root.clone(), package_name, version, fetch_yanked)?;
 
     // Resolve sub-dependencies (if any)
     let package_manifest_path = package_cache_path.join(MANIFEST_FILE_NAME);
@@ -45,6 +46,7 @@ pub fn store_package(
                 cache_root.clone(),
                 &sub_dep_name,
                 &sub_dep_version,
+                fetch_yanked,
             )?;
         }
     }
@@ -79,15 +81,17 @@ fn add_dep_to_manifest(
 /// * `cache_root` - The root directory of the cache.
 /// * `package_name` - The name of the package to retrieve.
 /// * `version` - The version of the package to retrieve.
+/// * `fetch_yanked` - fetch package even if yanked (used for fetch command)
 ///
 /// # Returns
 ///
 /// Returns the path to the cached package.
-fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str) -> Result<PathBuf, String> {
+fn get_to_cache(cache_root: PathBuf, package_name: &str, version: &str,
+            fetch_yanked: bool) -> Result<PathBuf, String> {
     let package_storage = get_cache_storage(cache_root.clone(), package_name, version);
     let cached_package_path = get_package_dir(cache_root, package_name, version);
 
-    download_package_api(&package_storage, package_name, version)?;
+    download_package_api(&package_storage, package_name, version, fetch_yanked)?;
     extract_tar_gz(&package_storage, &cached_package_path)
         .map_err(|_| "Problem extracting package".to_string())?;
 

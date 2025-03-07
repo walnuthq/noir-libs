@@ -21,7 +21,8 @@ pub fn fetch() -> anyhow::Result<()> {
                     .to_str().expect("Path file name is not valid UTF-8");
                 let package_name = path.parent().expect("Path is incorrect").file_name().expect("Path is incorrect")
                     .to_str().expect("Path file name is not valid UTF-8");
-                if let Err(e) = crate::ops::add::store_package(cache_root.clone(), package_name, &version) {
+                // Fetching packages should include downloading yanked packages for making current dependencies setup working
+                if let Err(e) = crate::ops::add::store_package(cache_root.clone(), package_name, &version, true) {
                     println!("{}", format!("Fetching dependency {}@{} failed: {}", package_name, version, e).red().bold());
                 }
             },
