@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::fmt;
@@ -9,6 +10,7 @@ use crate::config::MANIFEST_FILE_NAME;
 #[derive(Debug, Deserialize)]
 pub struct Manifest {
     pub package: Package,
+    pub dependencies: HashMap<String, Dependency>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -26,12 +28,28 @@ pub struct Package {
     pub repository: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Dependency {
+    Git {
+        git: String,
+        tag: Option<String>,
+        directory: Option<String>,
+    },
+    Path {
+        path: String,
+    },
+}
+
+
 #[derive(Debug, Deserialize, PartialEq)]
 pub enum PackageType {
     #[serde(rename = "lib")]
     Library,
     #[serde(rename = "contract")]
     Contract,
+    #[serde(rename = "bin")]
+    Binary,
 }
 
 impl fmt::Display for PackageType {
@@ -39,6 +57,7 @@ impl fmt::Display for PackageType {
         match self {
             PackageType::Library => write!(f, "lib"),
             PackageType::Contract => write!(f, "contract"),
+            PackageType::Binary => write!(f, "bin"),
         }
     }
 }
@@ -67,9 +86,8 @@ pub fn read_manifest(project_dir: &PathBuf) -> Result<Manifest> {
 ///
 /// This function will panic if the manifest file cannot be found, if the file cannot be read,
 /// or if the content is not valid TOML.
-pub fn write_package_dep(project_dir: PathBuf, package_name: &str, path: &str) -> PathBuf {
-    let manifest = try_find_manifest(&project_dir).expect(format!("Unable to find {} manifest file", &MANIFEST_FILE_NAME).as_str());
-    let content = std::fs::read_to_string(manifest.clone()).expect(format!("Cannot read {} manifest file", &MANIFEST_FILE_NAME).as_str());
+pub fn write_package_dep(manifest_path: &PathBuf, package_name: &str, path: &str) -> PathBuf {
+    let content = std::fs::read_to_string(manifest_path.clone()).expect(format!("Cannot read {} manifest file", &MANIFEST_FILE_NAME).as_str());
     let mut doc = content.parse::<DocumentMut>().expect("Invalid TOML");
 
     // Ensure the "dependencies" table exists
@@ -82,9 +100,9 @@ pub fn write_package_dep(project_dir: PathBuf, package_name: &str, path: &str) -
     // Assign to the dependencies table
     dependencies[package_name] = toml_edit::Item::Value(toml_edit::Value::InlineTable(table));
 
-    std::fs::write(manifest.clone(), doc.to_string()).expect("Cannot write file");
+    std::fs::write(manifest_path.clone(), doc.to_string()).expect("Cannot write file");
 
-    manifest
+    manifest_path.clone()
 }
 
 /// Retrieves the dependencies and their versions from the specified TOML manifest file.
@@ -132,7 +150,7 @@ pub fn get_dependencies(manifest: PathBuf) -> Vec<(String, String)> {
 /// # Returns
 ///
 /// An `Option<PathBuf>` that contains the path to the manifest file if found, or `None` if not found.
-fn try_find_manifest(start_dir: &Path) -> Option<PathBuf> {
+pub fn try_find_manifest(start_dir: &Path) -> Option<PathBuf> {
     let mut root = Some(start_dir);
     while let Some(path) = root {
         let manifest = path.join(MANIFEST_FILE_NAME);
@@ -204,6 +222,7 @@ pub fn remove_package(dir: PathBuf, package_name: &str) {
 mod tests {
     use super::*;
     use std::fs;
+    use crate::config::DEPENDENCIES_FOLDER_NAME;
 
     #[test]
     fn test_write_package_dep() {
@@ -216,13 +235,13 @@ mod tests {
 
         // Call the function to test
         let package_name = "my_package";
-        let path = "../../my_package/0.1.0";
-        let result = write_package_dep(project_dir.clone(), package_name, path);
+        let path = format!("{}/my_package/0.1.0", DEPENDENCIES_FOLDER_NAME);
+        let result = write_package_dep(&manifest_path, package_name, path.as_str());
 
         // Verify that the manifest file was updated correctly
         let content = fs::read_to_string(result).unwrap();
         assert!(content.contains("my_package"));
-        assert!(content.contains("path = \"../../my_package/0.1.0\""));
+        assert!(content.contains(format!("path = \"{}\"", path).as_str()));
 
         // Cleanup
         temp_dir.close().unwrap();
@@ -240,7 +259,7 @@ mod tests {
         // Call the function to test
         let package_name = "my_package";
         let path = "../../my_package/0.1.0";
-        let result = write_package_dep(project_dir.clone(), package_name, path);
+        let result = write_package_dep(&manifest_path, package_name, path);
 
         // Verify that the manifest file was updated correctly
         let content = fs::read_to_string(result).unwrap();
