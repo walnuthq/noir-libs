@@ -25,7 +25,7 @@ pub fn add(package_name: &str, version: &str) -> Result<String, String> {
     Ok(used_version)
 }
 
-fn store_package(
+pub fn store_package(
     cache_root: PathBuf,
     package_name: &str,
     version: &str,

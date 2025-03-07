@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::fmt;
@@ -9,6 +10,7 @@ use crate::config::MANIFEST_FILE_NAME;
 #[derive(Debug, Deserialize)]
 pub struct Manifest {
     pub package: Package,
+    pub dependencies: HashMap<String, Dependency>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -25,6 +27,20 @@ pub struct Package {
     pub documentation: Option<String>,
     pub repository: Option<String>,
 }
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Dependency {
+    Git {
+        git: String,
+        tag: Option<String>,
+        directory: Option<String>,
+    },
+    Path {
+        path: String,
+    },
+}
+
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub enum PackageType {

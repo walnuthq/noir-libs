@@ -1,5 +1,5 @@
 use anyhow::bail;
-use clap::{Args, CommandFactory, Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use colored::Colorize;
 use indoc::formatdoc;
 use noir_libs::config::PACKAGING_OUTPUT_FOLDER_PATH;
@@ -9,6 +9,7 @@ use noir_libs::ops::publish::publish;
 use noir_libs::ops::remove;
 use noir_libs::ops::yank::yank;
 use std::io;
+use noir_libs::ops::fetch::fetch;
 
 /// A CLI package manager for Noir | noir-libs.org
 #[derive(Parser)]
@@ -46,7 +47,11 @@ enum Commands {
     Yank {
         /// Package to yank in the format "package@version"
         package: String
-    }
+    },
+
+    /// Download all dependencies for a project
+    Fetch {
+    },
 }
 
 fn main() {
@@ -89,7 +94,7 @@ fn main() {
             }
             std::process::exit(1);
         }
-        Commands::Package {force} => {
+        Commands::Package { force } => {
             if !force {
                 let info = formatdoc! {
                     "This command packages your project to a tarball which later can be published to a remote registry.
@@ -129,6 +134,16 @@ fn main() {
                 Err(e) => { println!("{}", format!("Error: {}", e).red().bold()); }
             }
             std::process::exit(1);
+        },
+        Commands::Fetch {} => {
+            match fetch() {
+                Ok(_) => {
+                    println!("{}", "Downloaded all project dependencies.".green().bold());
+                }
+                Err(e) => {
+                    println!("{}", format!("Error: {}", e).red().bold());
+                }
+            }
         }
     }
 }
