@@ -97,11 +97,11 @@ fn main() {
         Commands::Package { force } => {
             if !force {
                 let info = formatdoc! {
-                    "This command packages your project to a tarball which later can be published to a remote registry.
-                     noir-libs is not building a project on your behalf.
-                     Please assure your project builds successfully (with \"nargo build\") before you package your project.
+                    "This command packages your project into a tarball, which can later be published to a remote registry.
+                     noir-libs will not build the project on your behalf.
+                     Please ensure your project builds successfully (using \"nargo build\") before packaging it.
 
-                     Does your project builds successfully (confirm with \"y\")?"};
+                     Does your project build successfully? (Confirm with \"y\")"};
                 println!("{}", info.yellow().bold());
                 let mut input = String::new();
                 io::stdin().read_line(&mut input).unwrap();
